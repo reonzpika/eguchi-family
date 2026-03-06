@@ -1,10 +1,9 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignInForm } from "@/components/auth/SignInForm";
 
 export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-warm px-6 py-12">
       <div className="w-full max-w-md space-y-8 text-center">
-        {/* Logo and branding */}
         <div className="space-y-4">
           <div className="mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-3xl bg-primary text-3xl shadow-lg">
             🌸
@@ -17,16 +16,8 @@ export default function SignInPage() {
           </p>
         </div>
 
-        {/* Clerk SignIn component */}
         <div className="flex justify-center">
-          <SignIn
-            appearance={{
-              elements: {
-                rootBox: "mx-auto",
-                card: "shadow-lg",
-              },
-            }}
-          />
+          <SignInForm />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/ui/Avatar";
@@ -33,7 +33,7 @@ export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
-  const { user } = useUser();
+  const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [project, setProject] = useState<Project | null>(null);
   const [latestDoc, setLatestDoc] = useState<LivingDocument | null>(null);
@@ -48,24 +48,13 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!projectId || !user?.id) {
+      const userId = session?.user?.id;
+      if (!projectId || !userId) {
         setLoading(false);
         return;
       }
 
       try {
-        // Get current user's ID from Supabase
-        const { data: dbUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("clerk_id", user.id)
-          .single();
-
-        if (!dbUser) {
-          router.push("/projects");
-          return;
-        }
-
         // Fetch project
         const { data: projectData, error: projectError } = await supabase
           .from("projects")
@@ -93,7 +82,7 @@ export default function ProjectDetailPage() {
         };
 
         setProject(projectWithOwner);
-        setIsOwner(projectData.user_id === dbUser.id);
+        setIsOwner(projectData.user_id === userId);
 
         // Fetch latest living document
         const { data: latestDocData } = await supabase
@@ -123,7 +112,7 @@ export default function ProjectDetailPage() {
     }
 
     fetchData();
-  }, [projectId, supabase, user, router]);
+  }, [projectId, supabase, session?.user?.id, router]);
 
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);

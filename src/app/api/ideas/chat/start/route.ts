@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import openai from "@/lib/openai";
+import { authOptions } from "@/lib/auth";
 
 const SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 家族のメンバーがビジネスアイデアを育てるのを温かくサポートするのがあなたの役割です。
@@ -40,9 +41,9 @@ isComplete はチェックリストがすべて完了した場合のみ true に
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

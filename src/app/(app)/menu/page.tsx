@@ -2,21 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useSession, signOut } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import { Avatar } from "@/components/ui/Avatar";
 
 interface FamilyMember {
   id: string;
   name: string;
-  email: string;
-  clerk_id: string;
+  email: string | null;
+  member_id: string | null;
 }
 
 export default function MenuPage() {
   const router = useRouter();
-  const { user } = useUser();
-  const clerk = useClerk();
+  const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +25,8 @@ export default function MenuPage() {
       try {
         const { data: usersData, error } = await supabase
           .from("users")
-          .select("id, name, email, clerk_id")
+          .select("id, name, email, member_id")
+          .not("member_id", "is", null)
           .order("created_at", { ascending: true });
 
         if (error) {
@@ -45,19 +45,19 @@ export default function MenuPage() {
   }, [supabase]);
 
   const handleSignOut = async () => {
-    await clerk.signOut();
+    await signOut({ redirect: false });
     router.push("/sign-in");
+    router.refresh();
   };
 
-  if (!user) {
+  if (!session?.user?.name) {
     return null;
   }
 
-  const firstName = user.firstName || user.fullName?.split(" ")[0] || "User";
-  const email = user.emailAddresses[0]?.emailAddress || "";
+  const firstName = session.user.name.split(" ")[0] || session.user.name;
 
   const isCurrentUser = (member: FamilyMember) => {
-    return member.clerk_id === user.id;
+    return member.member_id === session.user.member_id;
   };
 
   return (
@@ -68,7 +68,6 @@ export default function MenuPage() {
           <Avatar name={firstName} size={48} />
           <div className="flex-1">
             <h2 className="text-lg font-bold text-foreground">{firstName}</h2>
-            <p className="text-sm text-muted">{email}</p>
           </div>
         </div>
       </div>

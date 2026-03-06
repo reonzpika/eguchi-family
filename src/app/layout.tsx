@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -22,15 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="ja" className={notoSansJP.variable}>
-        <head>
-          <link rel="manifest" href="/manifest.json" />
-        </head>
-        <body className="antialiased bg-bg-warm font-sans">
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="ja" className={notoSansJP.variable}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body className="antialiased bg-bg-warm font-sans">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
+    </html>
   );
 }

@@ -1,10 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
 import { createServerComponentClient } from "@/lib/supabase-server";
 import resend from "@/lib/resend";
 import { render } from "@react-email/render";
 import ProjectUpdatedEmail from "@/lib/emails/ProjectUpdatedEmail";
+import { authOptions } from "@/lib/auth";
 
 const UPDATE_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 既存のリビングドキュメントに新しい内容を自然に統合してください。
@@ -21,9 +22,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -41,21 +42,7 @@ export async function POST(
       );
     }
 
-    // Look up user in Supabase
     const supabase = await createServerComponentClient();
-    const { data: dbUser, error: userError } = await supabase
-      .from("users")
-      .select("id, name, email")
-      .eq("clerk_id", userId)
-      .single();
-
-    if (userError || !dbUser) {
-      console.error("Error finding user:", userError);
-      return NextResponse.json(
-        { error: "ユーザーが見つかりませんでした。" },
-        { status: 404 }
-      );
-    }
 
     // Fetch project and verify ownership
     const { data: project, error: projectError } = await supabase
@@ -71,7 +58,7 @@ export async function POST(
       );
     }
 
-    if (project.user_id !== dbUser.id) {
+    if (project.user_id !== session.user.id) {
       return NextResponse.json(
         { error: "このプロジェクトを更新する権限がありません。" },
         { status: 403 }
@@ -173,7 +160,7 @@ ${newContent}`;
         const { data: allUsers, error: usersError } = await supabase
           .from("users")
           .select("id, name, email")
-          .neq("id", dbUser.id); // Exclude the user who made the update
+          .neq("id", session.user.id);
 
         if (usersError || !allUsers || allUsers.length === 0) {
           console.error("Error fetching users for email:", usersError);
@@ -186,7 +173,7 @@ ${newContent}`;
         // Render email template
         const emailHtml = await render(
           ProjectUpdatedEmail({
-            memberName: dbUser.name || "メンバー",
+            memberName: session.user.name || "メンバー",
             projectTitle: project.title,
             changeSummary: parsed.changeSummary,
             projectUrl,
@@ -198,7 +185,7 @@ ${newContent}`;
           resend.emails.send({
             from: "eguchi-workspace@clinicpro.co.nz",
             to: user.email,
-            subject: `🌸 ${dbUser.name || "メンバー"}さんが「${project.title}」を更新しました`,
+            subject: `🌸 ${session.user.name || "メンバー"}さんが「${project.title}」を更新しました`,
             html: emailHtml,
           })
         );

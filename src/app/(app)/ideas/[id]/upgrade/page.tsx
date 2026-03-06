@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import Link from "next/link";
 
@@ -16,7 +16,7 @@ export default function UpgradePage() {
   const router = useRouter();
   const params = useParams();
   const ideaId = params.id as string;
-  const { user } = useUser();
+  const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,25 +26,13 @@ export default function UpgradePage() {
 
   useEffect(() => {
     async function fetchIdea() {
-      if (!ideaId || !user?.id) {
+      const userId = session?.user?.id;
+      if (!ideaId || !userId) {
         setLoading(false);
         return;
       }
 
       try {
-        // Get current user's ID from Supabase
-        const { data: dbUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("clerk_id", user.id)
-          .single();
-
-        if (!dbUser) {
-          router.push("/ideas");
-          return;
-        }
-
-        // Fetch the idea
         const { data, error: fetchError } = await supabase
           .from("ideas")
           .select("id, title, user_id")
@@ -57,8 +45,7 @@ export default function UpgradePage() {
           return;
         }
 
-        // Check ownership
-        if (data.user_id !== dbUser.id) {
+        if (data.user_id !== userId) {
           router.push("/ideas");
           return;
         }
@@ -73,7 +60,7 @@ export default function UpgradePage() {
     }
 
     fetchIdea();
-  }, [ideaId, supabase, user, router]);
+  }, [ideaId, supabase, session?.user?.id, router]);
 
   const handleCreate = async () => {
     if (!idea) return;

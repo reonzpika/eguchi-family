@@ -1,15 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase-server";
+import { authOptions } from "@/lib/auth";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -29,21 +30,6 @@ export async function PATCH(
 
     const supabase = await createServerComponentClient();
 
-    // Look up user in Supabase
-    const { data: dbUser, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("clerk_id", userId)
-      .single();
-
-    if (userError || !dbUser) {
-      return NextResponse.json(
-        { error: "ユーザーが見つかりませんでした。" },
-        { status: 404 }
-      );
-    }
-
-    // Verify the idea belongs to the current user
     const { data: idea, error: ideaError } = await supabase
       .from("ideas")
       .select("user_id")
@@ -57,7 +43,7 @@ export async function PATCH(
       );
     }
 
-    if (idea.user_id !== dbUser.id) {
+    if (idea.user_id !== session.user.id) {
       return NextResponse.json(
         { error: "このアイデアを編集する権限がありません。" },
         { status: 403 }

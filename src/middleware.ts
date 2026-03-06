@@ -1,29 +1,42 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { isAdmin } from "@/lib/family-members";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)"]);
+const isPublicRoute = (pathname: string) => /^\/sign-in(\/.*)?$/.test(pathname);
+const isAuthApiRoute = (pathname: string) => pathname.startsWith("/api/auth");
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
-    
-    // Admin route protection
-    if (req.nextUrl.pathname.startsWith('/admin')) {
-      const { userId } = await auth();
-      const adminClerkId = process.env.ADMIN_CLERK_ID;
-      
-      if (!userId || userId !== adminClerkId) {
-        return NextResponse.redirect(new URL('/', req.url));
-      }
+export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
+  if (isPublicRoute(pathname) || isAuthApiRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  if (!token) {
+    const signInUrl = new URL("/sign-in", req.url);
+    signInUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  if (pathname.startsWith("/admin")) {
+    const memberId = token.member_id as string | undefined;
+    if (!memberId || !isAdmin(memberId)) {
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
-});
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

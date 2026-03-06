@@ -1,18 +1,18 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
+import { authOptions } from "@/lib/auth";
+import { isAdmin } from "@/lib/family-members";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.member_id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verify admin
-    const adminClerkId = process.env.ADMIN_CLERK_ID;
-    if (userId !== adminClerkId) {
+    if (!isAdmin(session.user.member_id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

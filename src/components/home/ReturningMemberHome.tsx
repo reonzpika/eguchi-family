@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -31,32 +31,23 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient();
 
-  const { user } = useUser();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   useEffect(() => {
     async function fetchData() {
-      if (!user?.id) return;
+      if (!userId) return;
 
       try {
-        // Get current user's ID from Supabase
-        const { data: dbUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("clerk_id", user.id)
-          .single();
-
-        if (!dbUser) return;
-
-        // Fetch stats
         const [ideasResult, projectsResult] = await Promise.all([
           supabase
             .from("ideas")
             .select("*", { count: "exact", head: true })
-            .eq("user_id", dbUser.id),
+            .eq("user_id", userId),
           supabase
             .from("projects")
             .select("*", { count: "exact", head: true })
-            .eq("user_id", dbUser.id),
+            .eq("user_id", userId),
         ]);
 
         setStats({
@@ -68,7 +59,7 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
         const { data: ideasData, error: ideasError } = await supabase
           .from("ideas")
           .select("id, title, polished_content, updated_at")
-          .eq("user_id", dbUser.id)
+          .eq("user_id", userId)
           .order("updated_at", { ascending: false })
           .limit(3);
 
@@ -87,7 +78,7 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
     }
 
     fetchData();
-  }, [supabase, user]);
+  }, [supabase, userId]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
 import { createServerComponentClient } from "@/lib/supabase-server";
+import { authOptions } from "@/lib/auth";
 
 const SUMMARISATION_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 会話の内容をもとに、ビジネスアイデアを整理してまとめてください。
@@ -27,9 +28,9 @@ type Message = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -46,21 +47,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up user in Supabase
     const supabase = await createServerComponentClient();
-    const { data: dbUser, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("clerk_id", userId)
-      .single();
-
-    if (userError || !dbUser) {
-      console.error("Error finding user:", userError);
-      return NextResponse.json(
-        { error: "ユーザーが見つかりませんでした。" },
-        { status: 404 }
-      );
-    }
 
     // Format chat history for OpenAI
     const chatHistoryText = chatHistory
@@ -114,7 +101,7 @@ ${chatHistoryText}`;
     const { data: idea, error: insertError } = await supabase
       .from("ideas")
       .insert({
-        user_id: dbUser.id,
+        user_id: session.user.id,
         title: parsed.title,
         original_paste: pastedText,
         polished_content: parsed.summary,

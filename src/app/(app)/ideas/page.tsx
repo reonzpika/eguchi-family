@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import Link from "next/link";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
@@ -17,7 +17,7 @@ interface Idea {
 
 export default function IdeasPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,26 +25,14 @@ export default function IdeasPage() {
 
   useEffect(() => {
     async function fetchIdeas() {
-      if (!user?.id) return;
+      const userId = session?.user?.id;
+      if (!userId) return;
 
       try {
-        // Get current user's ID from Supabase
-        const { data: dbUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("clerk_id", user.id)
-          .single();
-
-        if (!dbUser) {
-          setLoading(false);
-          return;
-        }
-
-        // Fetch all ideas for this user
         const { data: ideasData, error } = await supabase
           .from("ideas")
           .select("id, title, polished_content, updated_at")
-          .eq("user_id", dbUser.id)
+          .eq("user_id", userId)
           .order("updated_at", { ascending: false });
 
         if (error) {
@@ -62,7 +50,7 @@ export default function IdeasPage() {
     }
 
     fetchIdeas();
-  }, [supabase, user]);
+  }, [supabase, session?.user?.id]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import { Avatar } from "@/components/ui/Avatar";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
@@ -26,7 +26,7 @@ interface ProjectWithDescription extends Project {
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [projects, setProjects] = useState<ProjectWithDescription[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     async function fetchProjects() {
-      if (!user?.id) {
+      if (!session?.user?.id) {
         setLoading(false);
         return;
       }
@@ -120,7 +120,7 @@ export default function ProjectsPage() {
     }
 
     fetchProjects();
-  }, [supabase, user]);
+  }, [supabase, session?.user?.id]);
 
   const filteredProjects =
     filter === "すべて"
