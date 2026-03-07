@@ -18,8 +18,33 @@ export function SignInForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const selectedMember = FAMILY_MEMBERS.find((m) => m.member_id === memberId);
+
+  async function handleForgotPassword() {
+    if (!memberId) return;
+    setForgotLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_id: memberId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "送信に失敗しました");
+        return;
+      }
+      setForgotSent(true);
+    } catch {
+      setError("送信に失敗しました");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
 
   async function handlePickMember(e: React.FormEvent) {
     e.preventDefault();
@@ -117,6 +142,7 @@ export function SignInForm() {
     setPassword("");
     setConfirmPassword("");
     setError("");
+    setForgotSent(false);
   }
 
   return (
@@ -206,6 +232,20 @@ export function SignInForm() {
             className="w-full rounded-xl border border-border-warm bg-white px-4 py-3 text-foreground"
             autoComplete="current-password"
           />
+          {!forgotSent ? (
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={forgotLoading}
+              className="text-sm text-muted underline transition-opacity hover:text-foreground disabled:opacity-50"
+            >
+              {forgotLoading ? "送信中..." : "パスワードを忘れた"}
+            </button>
+          ) : (
+            <p className="text-sm text-green-600">
+              Ryo に連絡しました。パスワードのリセットについてご連絡ください。
+            </p>
+          )}
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-3">
             <button
