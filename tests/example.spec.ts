@@ -59,6 +59,12 @@ test.describe('New idea and other routes (unauthenticated)', () => {
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
+  test('redirects to sign-in when visiting idea validate page', async ({ page }) => {
+    await page.goto('/ideas/00000000-0000-0000-0000-000000000001/validate');
+
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
+
   test('redirects to sign-in when visiting feed', async ({ page }) => {
     await page.goto('/feed');
 
@@ -196,6 +202,36 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
       await expect(header).toHaveClass(/translate-y-0/);
       await expect(header).not.toHaveClass(/-translate-y-full/);
     }
+  });
+
+  test('ideas list: プロジェクトに昇格 menu item navigates to upgrade page', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByRole('combobox').selectOption(process.env.E2E_MEMBER_ID ?? { index: 1 });
+    await page.getByRole('button', { name: /次へ/ }).click();
+    await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
+    await page.getByRole('button', { name: /ログイン/ }).click();
+    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
+    const url = new URL(page.url());
+    if (url.pathname === '/discovery') {
+      await page.context().addCookies([
+        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
+      ]);
+      await page.goto('/');
+    }
+    await page.goto('/ideas');
+    await expect(page).toHaveURL(/\/ideas/);
+    const emptyState = page.getByText('まだアイデアがありません');
+    if (await emptyState.isVisible()) {
+      test.skip(true, 'No ideas in list; upgrade menu not available');
+    }
+    const menuButton = page.getByRole('button', { name: 'メニューを開く' }).first();
+    await expect(menuButton).toBeVisible({ timeout: 5000 });
+    await menuButton.click();
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible({ timeout: 3000 });
+    await menu.getByRole('link', { name: 'プロジェクトに昇格' }).click();
+    await expect(page).toHaveURL(/\/ideas\/[^/]+\/validate/, { timeout: 5000 });
+    await expect(page.getByText(/プロジェクトに昇格する前に|プロジェクトを作成する|AIがチェックしています/)).toBeVisible({ timeout: 10000 });
   });
 
   test('authenticated user can open projects list', async ({ page }) => {

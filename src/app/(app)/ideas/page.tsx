@@ -84,18 +84,19 @@ export default function IdeasPage() {
   };
 
   const handleMoveToProject = (idea: Idea) => {
-    router.push(`/ideas/${idea.id}/upgrade`);
+    router.push(`/ideas/${idea.id}/validate`);
   };
 
   const handleDelete = async (idea: Idea) => {
     if (!confirm("このアイデアを削除しますか？")) return;
+    const idToRemove = idea.id;
     try {
-      const res = await fetch(`/api/ideas/${idea.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/ideas/${idToRemove}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "削除に失敗しました");
       }
-      setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
+      setIdeas((prev) => prev.filter((i) => i.id !== idToRemove));
     } catch (err) {
       alert(err instanceof Error ? err.message : "削除に失敗しました");
     }

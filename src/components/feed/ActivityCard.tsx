@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import type { ActivityFeed } from "@/types/database";
 
@@ -33,37 +34,63 @@ export function ActivityCard({
   onClick,
   staggerIndex = 0,
 }: ActivityCardProps) {
+  const router = useRouter();
   const marginLeft = staggerIndex % 2 === 1 ? "ml-2" : "";
+  const isAiInsight = activity.activity_type === "ai_insight";
+  const isIdeaActivity =
+    activity.activity_type === "idea_started" ||
+    activity.activity_type === "idea_created";
+  const navigateToProject = activity.project_id && !onClick;
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (activity.project_id) {
+      router.push("/projects/" + activity.project_id);
+    }
+  };
+
   const content = (
     <div
       className={
         "flex min-h-[48px] gap-3 rounded-xl border border-border-warm bg-white p-4 shadow-sm transition-transform active:scale-[0.98] " +
-        marginLeft
+        marginLeft +
+        (navigateToProject || onClick ? " cursor-pointer" : "")
       }
-      role={onClick ? "button" : undefined}
+      role={navigateToProject || onClick ? "button" : undefined}
+      onClick={navigateToProject || onClick ? handleClick : undefined}
     >
-      <Avatar name={activity.user.name} size={40} />
+      {isAiInsight ? (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xl" aria-hidden>
+          🌸
+        </span>
+      ) : (
+        <Avatar name={activity.user.name} size={40} />
+      )}
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-foreground">
-          <span className="font-semibold">{activity.user.name}</span>
-          {activity.emoji ? (
-            <span className="ml-1" aria-hidden>
-              {activity.emoji}
-            </span>
-          ) : null}{" "}
-          {activity.title}
-        </p>
-        {activity.project_id ? (
-          <p className="mt-0.5 text-xs text-muted">
-            <Link
-              href={"/projects/" + activity.project_id}
-              className="underline hover:text-primary"
-              onClick={(e) => e.stopPropagation()}
-            >
-              プロジェクトを見る
-            </Link>
-          </p>
-        ) : null}
+        {isAiInsight ? (
+          <>
+            <p className="text-xs font-semibold text-muted">AI インサイト</p>
+            <p className="mt-0.5 text-sm text-foreground">{activity.title}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">{activity.user.name}</span>
+              {activity.emoji ? (
+                <span className="ml-1" aria-hidden>
+                  {activity.emoji}
+                </span>
+              ) : null}{" "}
+              {activity.title}
+            </p>
+            {activity.project_id && !isIdeaActivity ? (
+              <p className="mt-0.5 text-xs text-muted">
+                <span className="text-primary">プロジェクトを見る</span>
+              </p>
+            ) : null}
+          </>
+        )}
         <p className="mt-1 text-xs text-muted">
           {formatTimeAgo(activity.created_at)}
         </p>
@@ -71,12 +98,5 @@ export function ActivityCard({
     </div>
   );
 
-  if (onClick) {
-    return (
-      <button type="button" className="w-full text-left" onClick={onClick}>
-        {content}
-      </button>
-    );
-  }
   return content;
 }

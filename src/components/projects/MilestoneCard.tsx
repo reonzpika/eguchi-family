@@ -9,6 +9,8 @@ interface MilestoneCardProps {
   onStart: (id: string) => void;
   onComplete: (id: string) => void;
   onToggleTask: (taskId: string, isCompleted: boolean) => void;
+  /** When set, "開始する" shows a confirmation before switching (pause other milestone). */
+  otherInProgressMilestoneTitle?: string | null;
 }
 
 function TaskCheckbox({
@@ -53,8 +55,20 @@ export function MilestoneCard({
   onStart,
   onComplete,
   onToggleTask,
+  otherInProgressMilestoneTitle,
 }: MilestoneCardProps) {
   const [expanded, setExpanded] = useState(milestone.status === "in_progress");
+
+  const handleStartClick = () => {
+    if (otherInProgressMilestoneTitle?.trim()) {
+      const ok = window.confirm(
+        `「${otherInProgressMilestoneTitle}」を一時停止して、このマイルストーンに取り組みますか？`
+      );
+      if (ok) onStart(milestone.id);
+    } else {
+      onStart(milestone.id);
+    }
+  };
   const isNotStarted = milestone.status === "not_started";
   const isInProgress = milestone.status === "in_progress";
   const isCompleted = milestone.status === "completed";
@@ -145,7 +159,7 @@ export function MilestoneCard({
           {isNotStarted && isOwner && (
             <button
               type="button"
-              onClick={() => onStart(milestone.id)}
+              onClick={handleStartClick}
               className="w-full rounded-xl border-2 border-primary bg-white px-4 py-3 text-sm font-semibold text-primary transition-transform active:scale-[0.98]"
             >
               開始する

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
 import { sendNotification } from "@/lib/notifications";
+import { generateMilestoneCompleteInsight } from "@/lib/project-ai-insight";
 
 export async function POST(
   request: NextRequest,
@@ -130,18 +131,31 @@ export async function POST(
       .eq("id", project.id)
       .single();
 
-    const nextInProgress = allMilestones?.find(
+    const nextNotStarted = allMilestones?.find(
       (m) => m.id !== milestoneId && m.status === "not_started"
     );
     let next_milestone: (typeof updatedMilestone) | null = null;
-    if (nextInProgress) {
-      const { data: next } = await supabase
+    if (nextNotStarted) {
+      const { data: next, error: startNextError } = await supabase
         .from("milestones")
-        .select("*")
-        .eq("id", nextInProgress.id)
+        .update({
+          status: "in_progress",
+          started_at: new Date().toISOString(),
+        })
+        .eq("id", nextNotStarted.id)
+        .select()
         .single();
-      next_milestone = next;
+      if (!startNextError && next) next_milestone = next;
     }
+
+    const projectTitle =
+      (updatedProject as { title?: string } | null)?.title ?? "";
+    generateMilestoneCompleteInsight(
+      project.id,
+      projectTitle,
+      milestone.title,
+      progress_percentage
+    ).catch(() => {});
 
     await recordActivity(session.user.id, {
       activity_type: "milestone_completed",

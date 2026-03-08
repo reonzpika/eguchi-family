@@ -33,7 +33,7 @@ export async function POST(
 
     const { id: projectId } = await params;
     const body = await request.json();
-    const { newContent } = body;
+    const { newContent, updated_by: updatedBy } = body as { newContent?: string; updated_by?: string };
 
     if (!newContent || !newContent.trim()) {
       return NextResponse.json(
@@ -141,6 +141,7 @@ ${newContent}`;
         content: parsed.content,
         version_number: nextVersion,
         change_summary: parsed.changeSummary,
+        updated_by: updatedBy === "ai" ? "ai" : "user",
       });
 
     if (insertError) {

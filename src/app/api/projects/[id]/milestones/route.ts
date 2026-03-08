@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import type { MilestoneWithTasks } from "@/types/database";
 
@@ -88,6 +89,99 @@ export async function GET(
     console.error("Error in GET /api/projects/[id]/milestones:", error);
     return NextResponse.json(
       { error: "マイルストーンの読み込みに失敗しました。" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { id: projectId } = await params;
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "project id is required" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const description = typeof body.description === "string" ? body.description.trim() || null : null;
+
+    if (!title) {
+      return NextResponse.json(
+        { error: "title is required" },
+        { status: 400 }
+      );
+    }
+
+    const admin = createAdminClient();
+    const { data: project, error: projectError } = await admin
+      .from("projects")
+      .select("id, user_id")
+      .eq("id", projectId)
+      .single();
+
+    if (projectError || !project) {
+      return NextResponse.json(
+        { error: "プロジェクトが見つかりませんでした。" },
+        { status: 404 }
+      );
+    }
+
+    if (project.user_id !== session.user.id) {
+      return NextResponse.json(
+        { error: "このプロジェクトを編集する権限がありません。" },
+        { status: 403 }
+      );
+    }
+
+    const { data: existing } = await admin
+      .from("milestones")
+      .select("sequence_order")
+      .eq("project_id", projectId)
+      .order("sequence_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const nextOrder = existing ? existing.sequence_order + 1 : 1;
+
+    const { data: milestone, error: insertError } = await admin
+      .from("milestones")
+      .insert({
+        project_id: projectId,
+        title,
+        description,
+        sequence_order: nextOrder,
+        status: "not_started",
+      })
+      .select()
+      .single();
+
+    if (insertError || !milestone) {
+      console.error("Error inserting milestone:", insertError);
+      return NextResponse.json(
+        { error: "マイルストーンの追加に失敗しました。" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ milestone });
+  } catch (error) {
+    console.error("Error in POST /api/projects/[id]/milestones:", error);
+    return NextResponse.json(
+      { error: "マイルストーンの追加に失敗しました。" },
       { status: 500 }
     );
   }

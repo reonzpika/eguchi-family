@@ -3,16 +3,23 @@
 import { useState, useEffect } from "react";
 
 const VAPID_PUBLIC_KEY = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY : null;
+const STORAGE_KEY = "eguchi_push_prompt_seen";
 
 export function PushPermissionPrompt() {
   const [status, setStatus] = useState<"default" | "granted" | "denied" | "unsupported">("default");
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [deniedBannerDismissed, setDeniedBannerDismissed] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) {
       setStatus("unsupported");
       return;
+    }
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === "true") setDismissed(true);
+    } catch {
+      // ignore
     }
     if (Notification.permission === "granted") setStatus("granted");
     else if (Notification.permission === "denied") setStatus("denied");
@@ -58,27 +65,56 @@ export function PushPermissionPrompt() {
     }
   };
 
-  if (status === "granted" || status === "unsupported" || dismissed) return null;
+  const handleDismiss = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(STORAGE_KEY, "true");
+    } catch {
+      // ignore
+    }
+  };
+
+  if (status === "granted" || status === "unsupported") return null;
+
+  if (status === "denied" && !deniedBannerDismissed) {
+    return (
+      <div className="mb-4 flex items-center justify-between gap-2 rounded-xl border border-border-warm bg-white p-3">
+        <p className="text-xs text-muted">
+          設定で通知を有効にすると、振り返りリマインダーなどを受け取れます。
+        </p>
+        <button
+          type="button"
+          onClick={() => setDeniedBannerDismissed(true)}
+          className="shrink-0 text-xs font-semibold text-muted"
+          aria-label="閉じる"
+        >
+          閉じる
+        </button>
+      </div>
+    );
+  }
+
+  if (dismissed) return null;
 
   return (
-    <div className="rounded-xl border border-border-warm bg-white p-4">
-      <p className="text-sm font-semibold text-foreground">プッシュ通知</p>
+    <div className="mb-4 rounded-xl border border-border-warm bg-white p-4">
+      <p className="text-sm font-semibold text-foreground">🔔 通知を受け取る</p>
       <p className="mt-1 text-xs text-muted">
-        金曜の振り返りリマインダーなどをお知らせします。
+        金曜の振り返りリマインダーや、家族のマイルストーン達成をお知らせします。
       </p>
       <div className="mt-3 flex gap-2">
         <button
           type="button"
           onClick={handleAllow}
           disabled={loading || status === "denied"}
-          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="min-h-[44px] rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           {loading ? "登録中..." : "許可する"}
         </button>
         <button
           type="button"
-          onClick={() => setDismissed(true)}
-          className="rounded-xl border border-border-warm px-4 py-2 text-sm font-semibold text-muted"
+          onClick={handleDismiss}
+          className="min-h-[44px] rounded-xl border border-border-warm px-4 py-2 text-sm font-semibold text-muted"
         >
           後で
         </button>

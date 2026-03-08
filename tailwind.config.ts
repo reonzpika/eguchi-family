@@ -18,6 +18,7 @@ const config: Config = {
         "success-light": "#EBF7F2",
         "border-warm": "#F0E8DF",
         foreground: "#2D2D2D",
+        error: "#C73E1D",
       },
     },
   },

@@ -1,19 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { ActivityCard, type ActivityWithUser } from "@/components/feed/ActivityCard";
 import { StatsCards } from "@/components/feed/StatsCards";
+import { PushPermissionPrompt } from "@/components/notifications/PushPermissionPrompt";
 
 interface Stats {
   ideaCount: number;
   projectCount: number;
 }
 
+const PAGE_SIZE = 20;
+
 export default function HomePage() {
   const [activities, setActivities] = useState<ActivityWithUser[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || activities.length === 0) return;
+    const last = activities[activities.length - 1];
+    const before = last?.created_at;
+    if (!before) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/activity-feed?limit=${PAGE_SIZE}&before=${encodeURIComponent(before)}`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const next = (data.activities ?? []) as ActivityWithUser[];
+      setActivities((prev) => {
+        const prevIds = new Set(prev.map((a) => a.id));
+        const newItems = next.filter((a) => !prevIds.has(a.id));
+        return newItems.length ? [...prev, ...newItems] : prev;
+      });
+      setHasMore(!!data.has_more);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [activities.length, hasMore, loadingMore]);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +53,7 @@ export default function HomePage() {
     async function load() {
       try {
         const [feedRes, statsRes] = await Promise.all([
-          fetch("/api/activity-feed?limit=30"),
+          fetch(`/api/activity-feed?limit=${PAGE_SIZE}`),
           fetch("/api/me/stats"),
         ]);
 
@@ -40,6 +72,7 @@ export default function HomePage() {
 
         const data = await feedRes.json();
         setActivities(data.activities ?? []);
+        setHasMore(!!data.has_more);
       } catch (e) {
         if (!cancelled) {
           setError("読み込みに失敗しました");
@@ -54,6 +87,20 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasMore || loadingMore || activities.length === 0) return;
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      },
+      { rootMargin: "200px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, activities.length, loadMore]);
 
   if (loading) {
     return (
@@ -77,6 +124,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
       <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
 
+      <PushPermissionPrompt />
+
       {stats ? (
         <div className="mb-6">
           <StatsCards ideaCount={stats.ideaCount} projectCount={stats.projectCount} />
@@ -89,13 +138,19 @@ export default function HomePage() {
             まだアクティビティはありません。プロジェクトを作成したり、マイルストーンを完了するとここに表示されます。
           </p>
         ) : (
-          activities.map((activity, i) => (
-            <ActivityCard
-              key={activity.id}
-              activity={activity}
-              staggerIndex={i}
-            />
-          ))
+          <>
+            {activities.map((activity, i) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                staggerIndex={i}
+              />
+            ))}
+            <div ref={loadMoreRef} className="min-h-[24px]" aria-hidden />
+            {loadingMore && (
+              <p className="py-2 text-center text-sm text-muted">読み込み中...</p>
+            )}
+          </>
         )}
       </section>
     </div>

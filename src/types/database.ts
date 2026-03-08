@@ -50,10 +50,12 @@ export interface Reflection {
 
 export type ActivityType =
   | "idea_started"
+  | "idea_created"
   | "project_created"
   | "milestone_completed"
   | "reflection_submitted"
-  | "comment_added";
+  | "comment_added"
+  | "ai_insight";
 
 export interface ActivityFeed {
   id: string;

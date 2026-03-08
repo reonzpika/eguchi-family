@@ -53,6 +53,21 @@ export async function POST(
       );
     }
 
+    const { data: currentInProgress } = await supabase
+      .from("milestones")
+      .select("id")
+      .eq("project_id", milestone.project_id)
+      .eq("status", "in_progress")
+      .neq("id", milestoneId)
+      .maybeSingle();
+
+    if (currentInProgress) {
+      await supabase
+        .from("milestones")
+        .update({ status: "not_started", started_at: null })
+        .eq("id", currentInProgress.id);
+    }
+
     const { data: updated, error: updateError } = await supabase
       .from("milestones")
       .update({

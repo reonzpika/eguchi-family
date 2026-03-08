@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
+import { recordActivity } from "@/lib/activity-feed";
 import { generateFullSummary, type Message } from "@/lib/ideas-summary";
 
 const TITLE_AND_SUMMARY_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
@@ -172,6 +173,13 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    recordActivity(session.user.id, {
+      activity_type: "idea_created",
+      title: "新しいアイデアを保存しました",
+      emoji: "💡",
+      is_private: false,
+    }).catch(() => {});
 
     const full = await generateFullSummary(chatHistory as Message[]);
     if (full) {

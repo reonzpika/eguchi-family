@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { use, useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BusinessSummary } from "@/components/ideas/BusinessSummary";
@@ -27,10 +27,12 @@ interface Idea {
   chat_summary?: string | null;
 }
 
-export default function IdeaDetailPage() {
+type PageProps = { params: Promise<{ id: string }> };
+
+export default function IdeaDetailPage({ params }: PageProps) {
   const router = useRouter();
-  const params = useParams();
-  const ideaId = params.id as string;
+  const resolvedParams = use(params);
+  const ideaId = resolvedParams.id;
   const { data: session } = useSession();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [title, setTitle] = useState("");
@@ -310,7 +312,7 @@ export default function IdeaDetailPage() {
                       type="button"
                       onClick={() => {
                         setMenuOpen(false);
-                        router.push(`/ideas/${idea.id}/upgrade`);
+                        router.push(`/ideas/${idea.id}/validate`);
                       }}
                       className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
                     >
@@ -492,7 +494,7 @@ export default function IdeaDetailPage() {
                     type="button"
                     onClick={() => {
                       setMenuOpen(false);
-                      router.push(`/ideas/${idea.id}/upgrade`);
+                      router.push(`/ideas/${idea.id}/validate`);
                     }}
                     className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
                   >
@@ -518,7 +520,7 @@ export default function IdeaDetailPage() {
           <BusinessSummary
             summary={summary}
             onSaveIdea={handleSave}
-            onPromoteToProject={() => router.push(`/ideas/${idea.id}/upgrade`)}
+            onPromoteToProject={() => router.push(`/ideas/${idea.id}/validate`)}
             isSaved={saved}
             saving={saving}
             hideActions

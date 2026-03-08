@@ -4,6 +4,7 @@ import anthropic from "@/lib/anthropic";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
+import { updateProjectAiInsight } from "@/lib/project-ai-insight";
 import type { Reflection } from "@/types/database";
 
 function getStartOfWeekISO(): string {
@@ -186,7 +187,10 @@ ${reflectionContext}
         const updateRes = await fetch(`${origin}/api/projects/${projectId}/update`, {
           method: "POST",
           headers: { "Content-Type": "application/json", cookie },
-          body: JSON.stringify({ newContent: analysis.living_doc_suggestion }),
+          body: JSON.stringify({
+            newContent: analysis.living_doc_suggestion,
+            updated_by: "ai",
+          }),
         });
         if (updateRes.ok) living_doc_updated = true;
       } catch (e) {
@@ -241,6 +245,10 @@ ${reflectionContext}
       project_id: projectId,
       emoji: "📝",
     });
+
+    if (analysis.insight?.trim()) {
+      updateProjectAiInsight(projectId, analysis.insight).catch(() => {});
+    }
 
     return NextResponse.json({
       reflection: reflection as Reflection,

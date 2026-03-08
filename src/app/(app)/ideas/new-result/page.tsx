@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { use, useState, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import Link from "next/link";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
@@ -17,10 +17,16 @@ interface Idea {
   } | null;
 }
 
-function NewResultPageContent() {
+type ResolvedSearchParams = { [key: string]: string | string[] | undefined };
+
+function getIdeaIdFromSearchParams(sp: ResolvedSearchParams | null): string | null {
+  if (!sp?.id) return null;
+  const raw = sp.id;
+  return typeof raw === "string" ? raw : Array.isArray(raw) ? (raw[0] ?? null) : null;
+}
+
+function NewResultPageContent({ ideaId }: { ideaId: string | null }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const ideaId = searchParams.get("id");
   const supabase = createClientComponentClient();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [title, setTitle] = useState("");
@@ -203,7 +209,7 @@ function NewResultPageContent() {
         {/* Upgrade button (revealed after save) */}
         {saved && (
           <button
-            onClick={() => router.push(`/ideas/${idea.id}/upgrade`)}
+            onClick={() => router.push(`/ideas/${idea.id}/validate`)}
             className="w-full rounded-xl border-2 border-primary bg-white px-5 py-3.5 font-semibold text-primary transition-transform active:scale-[0.98]"
           >
             🚀 プロジェクトに昇格する
@@ -214,7 +220,14 @@ function NewResultPageContent() {
   );
 }
 
-export default function NewResultPage() {
+type PageProps = {
+  searchParams: Promise<ResolvedSearchParams>;
+};
+
+export default function NewResultPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = use(searchParams);
+  const ideaId = getIdeaIdFromSearchParams(resolvedSearchParams);
+
   return (
     <Suspense
       fallback={
@@ -226,7 +239,7 @@ export default function NewResultPage() {
         </div>
       }
     >
-      <NewResultPageContent />
+      <NewResultPageContent ideaId={ideaId} />
     </Suspense>
   );
 }

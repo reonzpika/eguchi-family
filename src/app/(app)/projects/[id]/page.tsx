@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { use, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import ReactMarkdown from "react-markdown";
@@ -11,10 +11,12 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { AtAGlanceCard } from "@/components/projects/AtAGlanceCard";
 import { MilestoneCard } from "@/components/projects/MilestoneCard";
+import { LivingDocSections } from "@/components/projects/LivingDocSections";
 import { WeeklyReflectionForm } from "@/components/reflections/WeeklyReflectionForm";
 import { ReflectionInsight } from "@/components/reflections/ReflectionInsight";
 import { CommentThread, type CommentWithMeta } from "@/components/comments/CommentThread";
 import { CommentInput } from "@/components/comments/CommentInput";
+import type { ActivityWithUser } from "@/components/feed/ActivityCard";
 import type { MilestoneWithTasks, Reflection } from "@/types/database";
 import type { ProjectTabId } from "@/components/projects/ProjectTabs";
 
@@ -25,6 +27,7 @@ interface Project {
   visibility: string;
   user_id: string;
   progress_percentage?: number;
+  ai_insight?: string | null;
   users: {
     name: string;
     avatar_color: string | null;
@@ -37,12 +40,15 @@ interface LivingDocument {
   version_number: number;
   change_summary: string;
   created_at: string;
+  updated_by?: string | null;
 }
 
-export default function ProjectDetailPage() {
+type PageProps = { params: Promise<{ id: string }> };
+
+export default function ProjectDetailPage({ params }: PageProps) {
   const router = useRouter();
-  const params = useParams();
-  const projectId = params.id as string;
+  const resolvedParams = use(params);
+  const projectId = resolvedParams.id;
   const { data: session } = useSession();
   const supabase = createClientComponentClient();
   const [project, setProject] = useState<Project | null>(null);
@@ -65,6 +71,15 @@ export default function ProjectDetailPage() {
   const [comments, setComments] = useState<CommentWithMeta[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [celebrationMessage, setCelebrationMessage] = useState<string | null>(null);
+  const [showWhatsNextModal, setShowWhatsNextModal] = useState(false);
+  const [whatsNextLoading, setWhatsNextLoading] = useState(false);
+  const [showAddMilestoneModal, setShowAddMilestoneModal] = useState(false);
+  const [addMilestoneTitle, setAddMilestoneTitle] = useState("");
+  const [addMilestoneDescription, setAddMilestoneDescription] = useState("");
+  const [addMilestoneLoading, setAddMilestoneLoading] = useState(false);
+  const [projectActivities, setProjectActivities] = useState<ActivityWithUser[]>([]);
+  const [loadingProjectActivities, setLoadingProjectActivities] = useState(false);
 
   function getStartOfWeekISO(): string {
     const d = new Date();
@@ -236,14 +251,92 @@ export default function ProjectDetailPage() {
       const res = await fetch(`/api/milestones/${milestoneId}/complete`, {
         method: "POST",
       });
-      if (res.ok) await fetchMilestones();
-      else {
-        const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const msg = data.celebration?.message ?? "マイルストーンを完了しました！お疲れ様です。";
+        setCelebrationMessage(msg);
+        await fetchMilestones();
+        if (data.next_milestone === null) {
+          setShowWhatsNextModal(true);
+        }
+      } else {
         alert(data.error || "完了に失敗しました");
       }
     } catch (e) {
       console.error("Error completing milestone:", e);
       alert("完了に失敗しました");
+    }
+  };
+
+  const handleWhatsNextChoice = async (direction: "keep_growing" | "maintain" | "pivot" | "on_hold") => {
+    if (!projectId) return;
+    setWhatsNextLoading(true);
+    try {
+      if (direction === "on_hold") {
+        const res = await fetch(`/api/projects/${projectId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "on_hold" }),
+        });
+        if (res.ok) {
+          setProject((p) => (p ? { ...p, status: "on_hold" } : p));
+          setShowWhatsNextModal(false);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || "更新に失敗しました");
+        }
+      } else {
+        const res = await fetch("/api/milestones/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            project_id: projectId,
+            append: true,
+            direction,
+          }),
+        });
+        if (res.ok) {
+          await fetchMilestones();
+          setShowWhatsNextModal(false);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || "マイルストーンの生成に失敗しました");
+        }
+      }
+    } catch (e) {
+      console.error("Error in What's next:", e);
+      alert("処理に失敗しました");
+    } finally {
+      setWhatsNextLoading(false);
+    }
+  };
+
+  const handleAddCustomMilestone = async () => {
+    if (!projectId || !addMilestoneTitle.trim()) return;
+    setAddMilestoneLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/milestones`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: addMilestoneTitle.trim(),
+          description: addMilestoneDescription.trim() || null,
+        }),
+      });
+      if (res.ok) {
+        setShowAddMilestoneModal(false);
+        setAddMilestoneTitle("");
+        setAddMilestoneDescription("");
+        await fetchMilestones();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "追加に失敗しました");
+      }
+    } catch (e) {
+      console.error("Error adding milestone:", e);
+      alert("追加に失敗しました");
+    } finally {
+      setAddMilestoneLoading(false);
     }
   };
 
@@ -299,9 +392,29 @@ export default function ProjectDetailPage() {
     }
   }, [projectId]);
 
+  const fetchProjectActivities = useCallback(async () => {
+    if (!projectId) return;
+    setLoadingProjectActivities(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/activity`);
+      if (res.ok) {
+        const data = await res.json();
+        setProjectActivities(data.activities ?? []);
+      }
+    } catch (e) {
+      console.error("Error fetching project activity:", e);
+    } finally {
+      setLoadingProjectActivities(false);
+    }
+  }, [projectId]);
+
   useEffect(() => {
     if (activeTab === "comments" && projectId) fetchComments();
   }, [activeTab, projectId, fetchComments]);
+
+  useEffect(() => {
+    if (activeTab === "activity" && projectId) fetchProjectActivities();
+  }, [activeTab, projectId, fetchProjectActivities]);
 
   const handleSubmitReflection = async (responses: {
     what_worked: string;
@@ -492,8 +605,8 @@ export default function ProjectDetailPage() {
   const ownerName = project.users?.name || "不明";
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="flex-1 overflow-y-auto px-5 py-6">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Back button */}
         <button
           onClick={() => router.push("/projects")}
@@ -525,7 +638,7 @@ export default function ProjectDetailPage() {
           {project.title}
         </h1>
 
-        {/* At a glance */}
+        {/* At a glance (sticky so it stays visible when scrolling) */}
         {(() => {
           const current = milestones.find((m) => m.status === "in_progress");
           const totalTasks = milestones.reduce(
@@ -552,12 +665,15 @@ export default function ProjectDetailPage() {
                 )
               : 0;
           return (
-            <AtAGlanceCard
-              currentMilestone={current ?? null}
-              completedCount={completedTasks}
-              totalCount={totalTasks}
-              overallPercentage={overallPct}
-            />
+            <div className="sticky top-0 z-10 -mx-5 bg-bg-warm px-5 pb-2">
+              <AtAGlanceCard
+                currentMilestone={current ?? null}
+                completedCount={completedTasks}
+                totalCount={totalTasks}
+                overallPercentage={overallPct}
+                aiInsight={project.ai_insight}
+              />
+            </div>
           );
         })()}
 
@@ -593,18 +709,24 @@ export default function ProjectDetailPage() {
               </>
             ) : (
               <>
-                {milestones
-                  .filter((m) => m.status !== "completed")
-                  .map((m) => (
-                    <MilestoneCard
-                      key={m.id}
-                      milestone={m}
-                      isOwner={isOwner}
-                      onStart={handleStartMilestone}
-                      onComplete={handleCompleteMilestone}
-                      onToggleTask={handleToggleTask}
-                    />
-                  ))}
+                {(() => {
+                  const inProgressMilestone = milestones.find((m) => m.status === "in_progress");
+                  return milestones
+                    .filter((m) => m.status !== "completed")
+                    .map((m) => (
+                      <MilestoneCard
+                        key={m.id}
+                        milestone={m}
+                        isOwner={isOwner}
+                        onStart={handleStartMilestone}
+                        onComplete={handleCompleteMilestone}
+                        onToggleTask={handleToggleTask}
+                        otherInProgressMilestoneTitle={
+                          m.status === "not_started" ? inProgressMilestone?.title ?? null : undefined
+                        }
+                      />
+                    ));
+                })()}
                 {milestones.some((m) => m.status === "completed") && (
                   <div>
                     <button
@@ -630,6 +752,15 @@ export default function ProjectDetailPage() {
                         ))}
                   </div>
                 )}
+                {isOwner && milestones.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddMilestoneModal(true)}
+                    className="mt-2 w-full rounded-xl border-2 border-dashed border-border-warm bg-white py-3 text-sm font-semibold text-muted transition-transform active:scale-[0.98]"
+                  >
+                    ＋ カスタムマイルストーンを追加
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -638,11 +769,16 @@ export default function ProjectDetailPage() {
         {/* Living doc tab */}
         {activeTab === "living-doc" && (
           <div>
-            {/* Living document content */}
+            {latestDoc.updated_by && (
+              <p className="mb-2 text-xs text-muted">
+                {latestDoc.updated_by === "ai"
+                  ? `AI 更新: ${formatRelativeTime(latestDoc.created_at)}`
+                  : `最終更新: ${formatRelativeTime(latestDoc.created_at)}`}
+              </p>
+            )}
+            {/* Living document content with collapsible sections */}
             <div className="mb-6 rounded-2xl border border-border-warm bg-white p-4">
-              <div className="markdown-content text-sm text-foreground [&_h2]:mb-3 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:mb-3 [&_ul]:ml-4 [&_ul]:list-disc [&_ol]:mb-3 [&_ol]:ml-4 [&_ol]:list-decimal [&_li]:mb-1 [&_strong]:font-semibold">
-                <ReactMarkdown>{latestDoc.content}</ReactMarkdown>
-              </div>
+              <LivingDocSections content={latestDoc.content} />
             </div>
 
             {/* Update form (owner only) */}
@@ -688,6 +824,49 @@ export default function ProjectDetailPage() {
                   </div>
                 )}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Activity tab */}
+        {activeTab === "activity" && (
+          <div className="flex flex-col gap-4">
+            {loadingProjectActivities ? (
+              <SkeletonCard height="h-24" className="mb-4" />
+            ) : projectActivities.length === 0 ? (
+              <p className="text-sm text-muted">このプロジェクトのアクティビティはまだありません。</p>
+            ) : (
+              (() => {
+                const byDate = new Map<string, ActivityWithUser[]>();
+                for (const a of projectActivities) {
+                  const key = new Date(a.created_at).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
+                  if (!byDate.has(key)) byDate.set(key, []);
+                  byDate.get(key)!.push(a);
+                }
+                return Array.from(byDate.entries()).map(([dateLabel, items]) => (
+                  <div key={dateLabel}>
+                    <p className="mb-2 text-xs font-semibold text-muted">{dateLabel}</p>
+                    <ul className="space-y-2">
+                      {items.map((a) => (
+                        <li
+                          key={a.id}
+                          className="flex items-start gap-2 rounded-xl border border-border-warm bg-white px-3 py-2 text-sm"
+                        >
+                          {a.emoji ? <span aria-hidden>{a.emoji}</span> : null}
+                          <span className="text-foreground">
+                            <span className="font-semibold">{a.user.name}</span>{" "}
+                            {a.title}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ));
+              })()
             )}
           </div>
         )}
@@ -809,6 +988,137 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {celebrationMessage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="celebration-title"
+        >
+          <div className="w-full max-w-[350px] rounded-2xl border border-border-warm bg-white p-4 shadow-lg">
+            <p id="celebration-title" className="mb-4 text-center text-sm font-semibold text-foreground">
+              {celebrationMessage}
+            </p>
+            <button
+              type="button"
+              onClick={async () => {
+                setCelebrationMessage(null);
+                const { data: projectData } = await supabase
+                  .from("projects")
+                  .select("ai_insight")
+                  .eq("id", projectId)
+                  .single();
+                if (projectData) {
+                  setProject((p) => (p ? { ...p, ai_insight: projectData.ai_insight ?? p.ai_insight } : p));
+                }
+              }}
+              className="min-h-[44px] w-full rounded-xl bg-primary py-3 font-semibold text-white transition-transform active:scale-[0.98]"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showAddMilestoneModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-milestone-title"
+        >
+          <div className="w-full max-w-[350px] rounded-2xl border border-border-warm bg-white p-4 shadow-lg">
+            <p id="add-milestone-title" className="mb-3 text-sm font-semibold text-foreground">
+              カスタムマイルストーンを追加
+            </p>
+            <input
+              type="text"
+              value={addMilestoneTitle}
+              onChange={(e) => setAddMilestoneTitle(e.target.value)}
+              placeholder="マイルストーンのタイトル"
+              className="mb-3 w-full rounded-xl border border-border-warm bg-white px-4 py-3 text-foreground focus:border-primary focus:outline-none"
+            />
+            <textarea
+              value={addMilestoneDescription}
+              onChange={(e) => setAddMilestoneDescription(e.target.value)}
+              placeholder="説明（任意）"
+              rows={2}
+              className="mb-4 w-full rounded-xl border border-border-warm bg-white px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddMilestoneModal(false);
+                  setAddMilestoneTitle("");
+                  setAddMilestoneDescription("");
+                }}
+                className="min-h-[44px] flex-1 rounded-xl border border-border-warm bg-white font-semibold text-foreground"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handleAddCustomMilestone}
+                disabled={addMilestoneLoading || !addMilestoneTitle.trim()}
+                className="min-h-[44px] flex-1 rounded-xl bg-primary font-semibold text-white disabled:opacity-50"
+              >
+                {addMilestoneLoading ? "追加中..." : "追加"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWhatsNextModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="whats-next-title"
+        >
+          <div className="w-full max-w-[350px] rounded-2xl border border-border-warm bg-white p-4 shadow-lg">
+            <p id="whats-next-title" className="mb-4 text-center text-sm font-semibold text-foreground">
+              おつかれさま！次のステップを選んでください
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => handleWhatsNextChoice("keep_growing")}
+                disabled={whatsNextLoading}
+                className="min-h-[44px] w-full rounded-xl bg-primary py-3 font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+              >
+                さらに成長する
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWhatsNextChoice("maintain")}
+                disabled={whatsNextLoading}
+                className="min-h-[44px] w-full rounded-xl border-2 border-primary bg-white py-3 font-semibold text-primary transition-transform active:scale-[0.98] disabled:opacity-50"
+              >
+                現状維持
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWhatsNextChoice("pivot")}
+                disabled={whatsNextLoading}
+                className="min-h-[44px] w-full rounded-xl border-2 border-border-warm bg-white py-3 font-semibold text-foreground transition-transform active:scale-[0.98] disabled:opacity-50"
+              >
+                方向転換
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWhatsNextChoice("on_hold")}
+                disabled={whatsNextLoading}
+                className="min-h-[44px] w-full rounded-xl border border-border-warm bg-white py-3 font-semibold text-muted transition-transform active:scale-[0.98] disabled:opacity-50"
+              >
+                プロジェクトを一時停止
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

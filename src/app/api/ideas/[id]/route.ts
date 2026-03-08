@@ -147,7 +147,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const supabase = await createServerComponentClient();
+    const supabase = createAdminClient();
 
     const { data: idea, error: ideaError } = await supabase
       .from("ideas")

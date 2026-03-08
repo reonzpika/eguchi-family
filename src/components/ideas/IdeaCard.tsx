@@ -125,8 +125,8 @@ export function IdeaCard({
         </button>
       )}
       {onMoveToProject && (
-        <button
-          type="button"
+        <Link
+          href={`/ideas/${idea.id}/validate`}
           role="menuitem"
           onClick={() => {
             setMenuOpen(false);
@@ -135,13 +135,15 @@ export function IdeaCard({
           className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
         >
           プロジェクトに昇格
-        </button>
+        </Link>
       )}
       {onDelete && (
         <button
           type="button"
           role="menuitem"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
             setMenuOpen(false);
             onDelete(idea);
           }}
@@ -189,7 +191,9 @@ export function IdeaCard({
             <div
               className="fixed inset-0 z-40"
               aria-hidden
-              onClick={() => setMenuOpen(false)}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setMenuOpen(false);
+              }}
             >
               {menuContent}
             </div>,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { use, useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ChatMarkdown } from "@/components/ui/ChatMarkdown";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 
@@ -22,10 +22,12 @@ interface Idea {
 /** Minimum new messages in this session to consider "substantial" and run AI update on exit. */
 const SUBSTANTIAL_THRESHOLD = 1;
 
-export default function IdeaChatPage() {
+type PageProps = { params: Promise<{ id: string }> };
+
+export default function IdeaChatPage({ params }: PageProps) {
   const router = useRouter();
-  const params = useParams();
-  const ideaId = params.id as string;
+  const resolvedParams = use(params);
+  const ideaId = resolvedParams.id;
   const [idea, setIdea] = useState<Idea | null>(null);
   const [loading, setLoading] = useState(true);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);

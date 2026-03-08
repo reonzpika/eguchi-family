@@ -112,6 +112,9 @@ export async function POST(request: NextRequest) {
 
     const sessionId = randomUUID();
 
+    // No longer emit idea_started here: one card per "create idea" (only idea_created on save).
+    // Previously we emitted idea_started on chat/start and idea_created on save, producing two cards.
+
     return NextResponse.json({
       sessionId,
       firstMessage: textContent.text,

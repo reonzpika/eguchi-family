@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { use, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { createClientComponentClient } from "@/lib/supabase-client";
 import Link from "next/link";
 
 interface Idea {
@@ -12,12 +11,13 @@ interface Idea {
   user_id: string;
 }
 
-export default function UpgradePage() {
+type PageProps = { params: Promise<{ id: string }> };
+
+export default function UpgradePage({ params }: PageProps) {
   const router = useRouter();
-  const params = useParams();
-  const ideaId = params.id as string;
+  const resolvedParams = use(params);
+  const ideaId = resolvedParams.id;
   const { data: session } = useSession();
-  const supabase = createClientComponentClient();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -26,30 +26,22 @@ export default function UpgradePage() {
 
   useEffect(() => {
     async function fetchIdea() {
-      const userId = session?.user?.id;
-      if (!ideaId || !userId) {
+      if (!ideaId || !session?.user?.id) {
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from("ideas")
-          .select("id, title, user_id")
-          .eq("id", ideaId)
-          .single();
-
-        if (fetchError || !data) {
-          console.error("Error fetching idea:", fetchError);
-          router.push("/ideas");
-          return;
+        const res = await fetch(`/api/ideas/${ideaId}`);
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403 || res.status === 404) {
+            router.push("/ideas");
+            return;
+          }
+          throw new Error("Failed to fetch idea");
         }
 
-        if (data.user_id !== userId) {
-          router.push("/ideas");
-          return;
-        }
-
+        const data = (await res.json()) as Idea;
         setIdea(data);
       } catch (err) {
         console.error("Error:", err);
@@ -60,7 +52,7 @@ export default function UpgradePage() {
     }
 
     fetchIdea();
-  }, [ideaId, supabase, session?.user?.id, router]);
+  }, [ideaId, session?.user?.id, router]);
 
   const handleCreate = async () => {
     if (!idea) return;

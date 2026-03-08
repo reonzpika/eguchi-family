@@ -300,7 +300,7 @@ export default function NewIdeaPage() {
                     type="button"
                     onClick={() => {
                       setMenuOpen(false);
-                      if (savedIdeaId) router.push(`/ideas/${savedIdeaId}/upgrade`);
+                      if (savedIdeaId) router.push(`/ideas/${savedIdeaId}/validate`);
                     }}
                     disabled={!savedIdeaId}
                     className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm disabled:opacity-50"

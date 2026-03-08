@@ -1,7 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
-import { createServerComponentClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createServerComponentClient();
+    const supabase = createAdminClient();
 
     // Fetch the idea and verify ownership
     const { data: idea, error: ideaError } = await supabase
