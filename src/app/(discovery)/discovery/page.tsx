@@ -72,24 +72,6 @@ const PLACEHOLDER_SUPERPOWER = {
     "混沌を整理し、わかりやすくする力があります。計画や仕組みづくりを活かしたビジネスが向いています。",
 };
 
-const PLACEHOLDER_IDEAS = [
-  {
-    emoji: "🕯️",
-    title: "ハンドメイドキャンドル",
-    description: "手作りスキルとデザインセンスを活かせます",
-  },
-  {
-    emoji: "🎨",
-    title: "オンラインデザイン教室",
-    description: "教えることが好きなあなたにぴったり",
-  },
-  {
-    emoji: "📦",
-    title: "地元産品のキュレーション",
-    description: "地域と人をつなぐお仕事です",
-  },
-];
-
 const COOKIE_NAME = "discovery_completed";
 const COOKIE_MAX_AGE_DAYS = 365;
 
@@ -190,7 +172,6 @@ export default function DiscoveryPage() {
         <SuperpowerCard
           title={PLACEHOLDER_SUPERPOWER.title}
           description={PLACEHOLDER_SUPERPOWER.description}
-          suggestedIdeas={PLACEHOLDER_IDEAS}
         />
 
         {completeError && (

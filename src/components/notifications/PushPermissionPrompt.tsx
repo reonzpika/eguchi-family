@@ -97,7 +97,7 @@ export function PushPermissionPrompt() {
   if (dismissed) return null;
 
   return (
-    <div className="mb-4 rounded-xl border border-border-warm bg-white p-4">
+    <div className="relative z-10 mb-4 rounded-xl border border-border-warm bg-white p-4">
       <p className="text-sm font-semibold text-foreground">🔔 通知を受け取る</p>
       <p className="mt-1 text-xs text-muted">
         金曜の振り返りリマインダーや、家族のマイルストーン達成をお知らせします。
@@ -105,16 +105,26 @@ export function PushPermissionPrompt() {
       <div className="mt-3 flex gap-2">
         <button
           type="button"
-          onClick={handleAllow}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAllow();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
           disabled={loading || status === "denied"}
-          className="min-h-[44px] rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="min-h-[44px] min-w-[100px] touch-manipulation cursor-pointer select-none rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "登録中..." : "許可する"}
         </button>
         <button
           type="button"
-          onClick={handleDismiss}
-          className="min-h-[44px] rounded-xl border border-border-warm px-4 py-2 text-sm font-semibold text-muted"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDismiss();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="min-h-[44px] min-w-[80px] touch-manipulation cursor-pointer select-none rounded-xl border border-border-warm px-4 py-2 text-sm font-semibold text-muted"
         >
           後で
         </button>
