@@ -14,6 +14,7 @@ interface Project {
   status: string;
   visibility: string;
   created_at: string;
+  progress_percentage?: number;
   users: {
     name: string;
     avatar_color: string | null;
@@ -232,7 +233,17 @@ export default function ProjectsPage() {
                 </h3>
 
                 {/* Description */}
-                <p className="mb-3 text-sm text-muted">{project.description}</p>
+                <p className="mb-2 text-sm text-muted">{project.description}</p>
+
+                {/* Progress bar */}
+                <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-border-warm">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                    style={{
+                      width: `${Math.min(100, Math.max(0, project.progress_percentage ?? 0))}%`,
+                    }}
+                  />
+                </div>
 
                 {/* Owner and status */}
                 <div className="flex items-center justify-between">

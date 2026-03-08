@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Avatar } from "@/components/ui/Avatar";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export function Header() {
   const { data: session } = useSession();
@@ -15,7 +16,8 @@ export function Header() {
       <div className="text-sm font-extrabold text-foreground">
         🌸 江口ファミリーハブ
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <NotificationBell />
         <span className="text-sm font-semibold text-foreground">
           {firstName}
         </span>

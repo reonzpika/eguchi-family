@@ -2,7 +2,9 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
 import { createServerComponentClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
+import { recordActivity } from "@/lib/activity-feed";
 
 const LIVING_DOC_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 以下のビジネスアイデアをもとに、リビングドキュメントの初版を
@@ -140,6 +142,77 @@ export async function POST(request: NextRequest) {
       console.error("Error updating idea:", updateError);
       // Don't fail the request, just log
     }
+
+    // Generate 3 initial milestones (fire-and-continue; don't fail project create)
+    const MILESTONE_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
+プロジェクトのリビングドキュメントをもとに、最初の3つのマイルストーンを生成してください。
+各マイルストーンには、明確なタイトルと短い説明、および2〜4個の具体的なタスクを含めてください。
+必ず以下のJSON形式のみで返答してください。他のテキストは含めないでください。
+\`\`\`json
+{"milestones":[{"title":"タイトル","description":"説明","tasks":[{"title":"タスク","description":""}]}]}
+\`\`\``;
+    try {
+      const milestoneCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: MILESTONE_SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: `リビングドキュメント:\n${cleanContent}`,
+          },
+        ],
+        temperature: 0.6,
+      });
+      const raw = milestoneCompletion.choices[0]?.message?.content;
+      if (raw) {
+        const clean = raw.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(clean) as {
+          milestones?: Array<{
+            title?: string;
+            description?: string;
+            tasks?: Array<{ title?: string; description?: string }>;
+          }>;
+        };
+        const list = parsed.milestones?.slice(0, 3) ?? [];
+        const adminSupabase = createAdminClient();
+        for (let i = 0; i < list.length; i++) {
+          const m = list[i];
+          const { data: row } = await adminSupabase
+            .from("milestones")
+            .insert({
+              project_id: project.id,
+              title: m.title || `マイルストーン ${i + 1}`,
+              description: m.description ?? null,
+              sequence_order: i + 1,
+              status: "not_started",
+            })
+            .select("id")
+            .single();
+          if (row && m.tasks?.length) {
+            for (let j = 0; j < m.tasks.length; j++) {
+              const t = m.tasks[j];
+              await adminSupabase.from("tasks").insert({
+                milestone_id: row.id,
+                title: t.title || `タスク ${j + 1}`,
+                description: t.description ?? null,
+                sequence_order: j + 1,
+                is_completed: false,
+              });
+            }
+          }
+        }
+      }
+    } catch (milestoneErr) {
+      console.error("Initial milestone generation failed:", milestoneErr);
+      // Project create still succeeds
+    }
+
+    await recordActivity(session.user.id, {
+      activity_type: "project_created",
+      title: `${idea.title} を作成しました`,
+      project_id: project.id,
+      emoji: "📁",
+    });
 
     return NextResponse.json({ projectId: project.id });
   } catch (error) {
