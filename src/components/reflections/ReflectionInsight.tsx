@@ -1,5 +1,7 @@
 "use client";
 
+import { ChatMarkdown } from "@/components/ui/ChatMarkdown";
+
 interface ReflectionInsightProps {
   insight: string;
   livingDocUpdated?: boolean;
@@ -13,9 +15,9 @@ export function ReflectionInsight({
 }: ReflectionInsightProps) {
   return (
     <div className="rounded-2xl border border-border-warm bg-white p-4">
-      <p className="mb-4 whitespace-pre-wrap text-sm text-foreground leading-relaxed">
-        {insight}
-      </p>
+      <div className="mb-4 text-sm text-foreground">
+        <ChatMarkdown>{insight}</ChatMarkdown>
+      </div>
       {(livingDocUpdated || newMilestonesGenerated) && (
         <div className="flex flex-wrap gap-2">
           {livingDocUpdated && (

@@ -106,6 +106,8 @@
 **Status:** ✅ Complete (needs AI migration)  
 **Total Points:** 34
 
+**Implementation guideline (AI chat with profile/context):** When implementing or changing AI chat that uses user profile or discovery data: load profile in the background and inject into the system prompt only. The AI must **not** repeat or summarise the profile to the user (e.g. no "プロフィールを拝見すると…"); use it only to tailor advice. Always ask open questions as normal. See [docs/AI_SYSTEM_OVERVIEW.md](docs/AI_SYSTEM_OVERVIEW.md) "Profile and context in AI chat" and `src/lib/discovery-profile.ts`.
+
 ---
 
 ### Story 2.1: AI Tool Selection
@@ -203,6 +205,7 @@
 - [ ] AI detects when exploration is complete
 - [ ] No generic business jargon used
 - [ ] Conversation tone is warm and encouraging
+- [ ] AI does not repeat or summarise the user's profile/discovery answers (profile used in background only; open questions as normal)
 
 **Points:** 13  
 **Priority:** P0  

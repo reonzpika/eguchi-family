@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { createClientComponentClient } from "@/lib/supabase-client";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 
@@ -29,48 +28,39 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
   const [stats, setStats] = useState<Stats>({ ideasCount: 0, projectsCount: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient();
 
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     async function fetchData() {
-      if (!userId) return;
+      if (status === "unauthenticated") {
+        setLoading(false);
+        return;
+      }
+      if (status !== "authenticated") return;
 
       try {
-        const [ideasResult, projectsResult] = await Promise.all([
-          supabase
-            .from("ideas")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
-            .from("projects")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId),
+        const [statsRes, ideasRes] = await Promise.all([
+          fetch("/api/me/stats"),
+          fetch("/api/ideas"),
         ]);
 
-        setStats({
-          ideasCount: ideasResult.count || 0,
-          projectsCount: projectsResult.count || 0,
-        });
-
-        // Fetch recent ideas
-        const { data: ideasData, error: ideasError } = await supabase
-          .from("ideas")
-          .select("id, title, polished_content, updated_at")
-          .eq("user_id", userId)
-          .order("updated_at", { ascending: false })
-          .limit(3);
-
-        if (ideasError) {
-          console.error("Error fetching ideas:", ideasError);
-          setError("アイデアの読み込みに失敗しました");
-        } else {
-          setIdeas(ideasData || []);
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats({
+            ideasCount: statsData.ideaCount ?? 0,
+            projectsCount: statsData.projectCount ?? 0,
+          });
         }
-      } catch (error) {
-        console.error("Error:", error);
+
+        if (ideasRes.ok) {
+          const ideasData = (await ideasRes.json()) as Idea[];
+          setIdeas((ideasData ?? []).slice(0, 3));
+        } else {
+          setError("アイデアの読み込みに失敗しました");
+        }
+      } catch (err) {
+        console.error("Error:", err);
         setError("データの読み込みに失敗しました");
       } finally {
         setLoading(false);
@@ -78,7 +68,7 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
     }
 
     fetchData();
-  }, [supabase, userId]);
+  }, [status]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -161,7 +151,7 @@ export function ReturningMemberHome({ name }: ReturningMemberHomeProps) {
 
       {/* Add new idea button */}
       <button
-        onClick={() => router.push("/onboarding")}
+        onClick={() => router.push("/ideas/new")}
         className="w-full rounded-xl bg-primary px-5 py-3.5 font-semibold text-white transition-transform active:scale-[0.98]"
       >
         ＋ 新しいアイデアを追加する

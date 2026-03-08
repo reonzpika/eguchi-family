@@ -9,7 +9,7 @@ export default function SignInPage() {
             🌸
           </div>
           <h1 className="text-[26px] font-extrabold text-foreground">
-            江口ファミリーハブ
+            Family Workspace
           </h1>
           <p className="text-sm text-muted">
             家族のプライベートワークスペース

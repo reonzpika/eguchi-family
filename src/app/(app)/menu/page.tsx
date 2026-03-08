@@ -75,7 +75,7 @@ export default function MenuPage() {
       {/* Navigation list */}
       <div className="mb-6 flex flex-col gap-3">
         <button
-          onClick={() => router.push("/feed")}
+          onClick={() => router.push("/")}
           className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
         >
           <div>
@@ -158,10 +158,9 @@ export default function MenuPage() {
         )}
       </div>
 
-      {/* Sign out button */}
       <button
         onClick={handleSignOut}
-        className="mt-auto rounded-xl border-2 border-border-warm bg-white px-5 py-3 text-sm font-semibold text-muted transition-colors active:bg-border-warm"
+        className="mt-auto min-h-[48px] rounded-xl border-2 border-border-warm bg-white px-5 py-3 text-sm font-semibold text-muted transition-colors active:scale-[0.97] active:bg-border-warm"
       >
         ログアウト
       </button>

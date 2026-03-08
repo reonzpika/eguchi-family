@@ -1,31 +1,103 @@
-import { getServerSession } from "next-auth";
-import { createServerComponentClient } from "@/lib/supabase-server";
-import { NewMemberHome } from "@/components/home/NewMemberHome";
-import { ReturningMemberHome } from "@/components/home/ReturningMemberHome";
-import { authOptions } from "@/lib/auth";
+"use client";
 
-export default async function HomePage() {
-  const session = await getServerSession(authOptions);
+import { useEffect, useState } from "react";
+import { ActivityCard, type ActivityWithUser } from "@/components/feed/ActivityCard";
+import { StatsCards } from "@/components/feed/StatsCards";
 
-  if (!session?.user?.id) {
-    return null;
+interface Stats {
+  ideaCount: number;
+  projectCount: number;
+}
+
+export default function HomePage() {
+  const [activities, setActivities] = useState<ActivityWithUser[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const [feedRes, statsRes] = await Promise.all([
+          fetch("/api/activity-feed?limit=30"),
+          fetch("/api/me/stats"),
+        ]);
+
+        if (cancelled) return;
+        if (!feedRes.ok) {
+          setError("アクティビティの読み込みに失敗しました");
+          setLoading(false);
+          return;
+        }
+        if (!statsRes.ok) {
+          setStats({ ideaCount: 0, projectCount: 0 });
+        } else {
+          const statsData = await statsRes.json();
+          setStats({ ideaCount: statsData.ideaCount ?? 0, projectCount: statsData.projectCount ?? 0 });
+        }
+
+        const data = await feedRes.json();
+        setActivities(data.activities ?? []);
+      } catch (e) {
+        if (!cancelled) {
+          setError("読み込みに失敗しました");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
+        <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
+        <p className="text-muted">読み込み中...</p>
+      </div>
+    );
   }
 
-  const name = session.user.name ?? "User";
-  const firstName = name.split(" ")[0] || name;
-
-  const supabase = await createServerComponentClient();
-
-  const { count } = await supabase
-    .from("ideas")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", session.user.id);
-
-  const ideasCount = count ?? 0;
-
-  if (ideasCount === 0) {
-    return <NewMemberHome name={firstName} />;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
+        <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
   }
 
-  return <ReturningMemberHome name={firstName} />;
+  return (
+    <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
+      <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
+
+      {stats ? (
+        <div className="mb-6">
+          <StatsCards ideaCount={stats.ideaCount} projectCount={stats.projectCount} />
+        </div>
+      ) : null}
+
+      <section aria-label="アクティビティ一覧" className="space-y-3">
+        {activities.length === 0 ? (
+          <p className="text-muted">
+            まだアクティビティはありません。プロジェクトを作成したり、マイルストーンを完了するとここに表示されます。
+          </p>
+        ) : (
+          activities.map((activity, i) => (
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              staggerIndex={i}
+            />
+          ))
+        )}
+      </section>
+    </div>
+  );
 }

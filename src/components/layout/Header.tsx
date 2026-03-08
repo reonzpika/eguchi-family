@@ -14,7 +14,7 @@ export function Header() {
   return (
     <header className="fixed left-1/2 top-0 z-50 flex w-full max-w-[390px] -translate-x-1/2 items-center justify-between border-b border-border-warm bg-white/95 px-4 py-3 backdrop-blur-sm">
       <div className="text-sm font-extrabold text-foreground">
-        🌸 江口ファミリーハブ
+        🌸 Family Workspace
       </div>
       <div className="flex items-center gap-1">
         <NotificationBell />

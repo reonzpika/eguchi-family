@@ -41,7 +41,7 @@ export default function InspirationPage() {
         {PROMPTS.map((prompt, idx) => (
           <button
             key={idx}
-            onClick={() => router.push("/onboarding")}
+            onClick={() => router.push("/ideas/new")}
             className="rounded-2xl border border-border-warm bg-secondary/10 p-5 text-left transition-transform active:scale-[0.98]"
           >
             <div className="mb-3 text-3xl">{prompt.emoji}</div>

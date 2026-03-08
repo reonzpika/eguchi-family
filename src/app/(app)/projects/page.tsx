@@ -7,6 +7,7 @@ import { createClientComponentClient } from "@/lib/supabase-client";
 import { Avatar } from "@/components/ui/Avatar";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface Project {
   id: string;
@@ -193,19 +194,16 @@ export default function ProjectsPage() {
         ))}
       </div>
 
-      {/* Projects list */}
       {filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="mb-4 text-muted">
-            まだプロジェクトはありません。アイデアをプロジェクトに昇格させましょう！
-          </p>
-          <button
-            onClick={() => router.push("/ideas")}
-            className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
-          >
-            アイデアをプロジェクトに昇格させる →
-          </button>
-        </div>
+        <EmptyState
+          emoji="📁"
+          title="まだプロジェクトはありません"
+          description="アイデアをプロジェクトに昇格させましょう"
+          action={{
+            label: "アイデアをプロジェクトに昇格させる →",
+            onClick: () => router.push("/ideas"),
+          }}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {filteredProjects.map((project) => {

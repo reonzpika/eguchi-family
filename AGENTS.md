@@ -6,7 +6,7 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 
 ## Current Status
 
-- **Complete:** Phase 1 (Foundation and authentication); Phase 2 (Idea discovery, onboarding, AI chat, finalize, save, upgrade to project); Phase 3 core (project creation, living document, version history, milestones UI, task completion, reflections tab and API); AI migration (idea chat uses Claude; finalize/create/update use OpenAI); Phase 4 (Activity feed, comments, reactions, feed UI, project comments tab); Phase 5–6 (Notifications in-app bell and list, push subscribe/unsubscribe, PushPermissionPrompt, Friday 7pm cron API). Success = tests pass, docs accurate, no regressions.
+- **Complete:** Phase 1 (Foundation and authentication); Phase 2 (Idea discovery, /ideas/new chat-only flow, AI chat, finalize, save, upgrade to project); Phase 3 core (project creation, living document, version history, milestones UI, task completion, reflections tab and API); AI migration (idea chat uses Claude; finalize/create/update use OpenAI); Phase 4 (Activity feed, comments, reactions, feed UI, project comments tab); Phase 5–6 (Notifications in-app bell and list, push subscribe/unsubscribe, PushPermissionPrompt, Friday 7pm cron API). Success = tests pass, docs accurate, no regressions.
 - **In Progress:** None.
 - **Pending:** Phase 7 optional (Project chat, web search, living-doc popup). @mentions in comments (extract only; no mention notification yet).
 
@@ -29,11 +29,16 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 | 2026-03-08 | Sign-in step 2 shows password field after 次へ (API auth/status). | Added test; added authenticated-flow tests (skipped unless E2E_PASSWORD set). |
 | 2026-03-08 | Activity feed, comments, reactions, notifications, push implemented per plan. | Migrations (activity_feed, comments, reactions, notifications, push_subscriptions); APIs and UI; triggers on project create, milestone complete, reflection, comment. |
 | 2026-03-08 | Friday 7pm reminder: GET /api/cron/friday-reminder (CRON_SECRET). | Call from Vercel Cron or external cron; creates weekly_reflection notifications for project owners. |
+| 2026-03-08 | Phase 2 idea flow: pastedText removed; /ideas/new is chat-only; onboarding page removed. | Backend chat/start, chat/message, finalize no longer use pastedText; all "new idea" links point to /ideas/new; Playwright tests updated. |
+| 2026-03-08 | Idea chat save and resume: drafts persisted with chat_history and chat_summary. | Migration 20250312000000; POST /api/ideas/chat/save (AI title + summary); Back = save then redirect; Save button; idea detail shows draft chat resume with summary; finalize accepts ideaId to update draft. |
+| 2026-03-08 | Mobile-first idea pages: single 保存 in header; 3-dot menu (Rename, Move to project); summary on every save. | PLAN.md updated; chat/save accepts ideaId and runs full AI summary on insert and update; /ideas/new and /ideas/[id] use sticky header with 保存 + 3-dot; BusinessSummary hideActions for header-only actions; 44px touch targets. |
+| 2026-03-08 | When AI replied, scroll-to-bottom forced users to scroll up to read the start of the message. | Scroll logic: when last message is agent, scroll start of that message into view (`block: "start"`); when last is user, scroll to end. Applied in ideas/new, ideas/[id]/chat, ideas/[id], IdeaChat. |
+| 2026-03-08 | IdeaChatPage header hide-on-scroll didn't work: page used `min-h-screen` so window scrolled not inner div. | AppChrome `main` is now `h-dvh overflow-hidden` for detail pages; IdeaChatPage root is `h-full`; scroll listener is simple and direct. |
 
 ## Next Iteration Plan
 
 1. Run and fix Playwright until all tests pass.
-2. Add tests for authenticated flows per USER_FLOWS (home, onboarding, idea flow, project detail).
+2. Add tests for authenticated flows per USER_FLOWS (home, idea flow, project detail).
 3. Implement Activity Feed, then Comments/Reactions, then Notifications, then Push and Friday 7pm reminder (each with migration, API, UI, triggers, tests).
 4. Update Learning Log and Success Criteria after each iteration.
 5. Optional: Project chat and living-doc popup (Epic 7).
@@ -43,7 +48,7 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 | Area                 | Implemented                                                      | Pending                                       |
 | -------------------- | ---------------------------------------------------------------- | --------------------------------------------- |
 | Auth & foundation    | Sign-in, session, protected routes, admin                        | -                                             |
-| Ideas                | Onboarding, chat (Claude), finalize (OpenAI), save, upgrade      | -                                             |
+| Ideas                | Main page /ideas (list), /ideas/new (chat-only), chat (Claude), save (single 保存 + 3-dot: Rename, Move to project), AI summary on every save, sticky header, resume (draft/summary), upgrade | -                                             |
 | Projects             | Create, living doc, versions, milestones, tasks, reflections tab | -                                             |
 | Feed & collaboration | Activity feed, comments tab, reactions, CommentThread/Input       | @mention notifications                        |
 | Notifications        | In-app bell, NotificationList, push subscribe/unsubscribe, Friday 7pm API | Push send (needs VAPID keys in prod) |

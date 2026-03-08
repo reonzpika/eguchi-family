@@ -153,6 +153,7 @@ export function SignInForm() {
             誰ですか？
           </label>
           <select
+            data-testid="sign-in-member-select"
             value={memberId}
             onChange={(e) => setMemberId(e.target.value)}
             className="w-full rounded-xl border border-border-warm bg-white px-4 py-3 text-foreground"

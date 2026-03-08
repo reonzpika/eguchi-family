@@ -2,7 +2,12 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import anthropic from "@/lib/anthropic";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
+import {
+  getDiscoveryProfileForUser,
+  formatProfileForPrompt,
+} from "@/lib/discovery-profile";
 
 const SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 家族のメンバーがビジネスアイデアを育てるのを温かくサポートするのがあなたの役割です。
@@ -39,24 +44,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { pastedText } = body;
+    const body = await request.json().catch(() => ({}));
+    const ideaId = body?.ideaId;
 
-    if (!pastedText || typeof pastedText !== "string") {
-      return NextResponse.json(
-        { error: "pastedText is required" },
-        { status: 400 }
-      );
+    if (ideaId) {
+      const supabase = createAdminClient();
+      const { data: idea, error } = await supabase
+        .from("ideas")
+        .select("id, user_id, chat_history, chat_summary")
+        .eq("id", ideaId)
+        .single();
+
+      if (error || !idea) {
+        return NextResponse.json(
+          { error: "アイデアが見つかりませんでした。" },
+          { status: 404 }
+        );
+      }
+      if (idea.user_id !== session.user.id) {
+        return NextResponse.json(
+          { error: "このアイデアを編集する権限がありません。" },
+          { status: 403 }
+        );
+      }
+      const history = idea.chat_history;
+      if (!Array.isArray(history) || history.length === 0) {
+        return NextResponse.json(
+          { error: "このアイデアの会話履歴がありません。" },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        resumed: true,
+        ideaId: idea.id,
+        chatHistory: history,
+        chatSummary: idea.chat_summary ?? null,
+      });
     }
 
+    // Profile is for background personalisation only; prompt instructs AI not to repeat it to the user
+    const profile = await getDiscoveryProfileForUser(session.user.id);
+    const profileBlock = formatProfileForPrompt(profile);
+    const systemPrompt = SYSTEM_PROMPT + "\n\n" + profileBlock;
+
+    // No pastedText: conversation starts from scratch with an opener
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [
         {
           role: "user",
-          content: `以下のビジネスアイデアについて、最初の質問をしてください：\n\n${pastedText}`,
+          content:
+            "これからアイデアを話し合います。最初の質問をしてください。",
         },
       ],
     });

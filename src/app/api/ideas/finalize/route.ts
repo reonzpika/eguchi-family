@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
-import { createServerComponentClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 
 const SUMMARISATION_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
@@ -38,16 +38,46 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { sessionId, chatHistory, pastedText } = body;
+    const { sessionId, chatHistory: bodyChatHistory, ideaId } = body;
 
-    if (!sessionId || !chatHistory || !pastedText) {
-      return NextResponse.json(
-        { error: "sessionId, chatHistory, and pastedText are required" },
-        { status: 400 }
-      );
+    const supabase = createAdminClient();
+    let chatHistory = bodyChatHistory;
+
+    if (ideaId) {
+      const { data: idea, error: fetchError } = await supabase
+        .from("ideas")
+        .select("id, user_id, chat_history")
+        .eq("id", ideaId)
+        .single();
+
+      if (fetchError || !idea) {
+        return NextResponse.json(
+          { error: "アイデアが見つかりませんでした。" },
+          { status: 404 }
+        );
+      }
+      if (idea.user_id !== session.user.id) {
+        return NextResponse.json(
+          { error: "このアイデアを編集する権限がありません。" },
+          { status: 403 }
+        );
+      }
+      const history = idea.chat_history;
+      if (!Array.isArray(history) || history.length === 0) {
+        return NextResponse.json(
+          { error: "会話履歴がありません。" },
+          { status: 400 }
+        );
+      }
+      chatHistory = history;
+    } else {
+      if (!sessionId || !chatHistory) {
+        return NextResponse.json(
+          { error: "sessionId and chatHistory are required when not finalizing an existing idea" },
+          { status: 400 }
+        );
+      }
     }
-
-    const supabase = await createServerComponentClient();
 
     // Format chat history for OpenAI
     const chatHistoryText = chatHistory
@@ -57,11 +87,8 @@ export async function POST(request: NextRequest) {
       })
       .join("\n");
 
-    // Call OpenAI for summarization
+    // Call OpenAI for summarization (conversation only; no pastedText)
     const userMessage = `以下の会話をもとに、ビジネスアイデアをまとめてください。
-
-元のアイデア：
-${pastedText}
 
 会話の内容：
 ${chatHistoryText}`;
@@ -97,15 +124,43 @@ ${chatHistoryText}`;
       );
     }
 
-    // Insert into Supabase
+    if (ideaId) {
+      const { data: idea, error: updateError } = await supabase
+        .from("ideas")
+        .update({
+          polished_content: parsed.summary,
+          ai_suggestions: parsed,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", ideaId)
+        .select()
+        .single();
+
+      if (updateError || !idea) {
+        console.error("Error updating idea:", updateError);
+        return NextResponse.json(
+          { error: "アイデアの保存に失敗しました。" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        ideaId: idea.id,
+        title: idea.title,
+        summary: parsed.summary,
+        suggestions: parsed.suggestions,
+        nextStep: parsed.nextStep,
+      });
+    }
+
     const { data: idea, error: insertError } = await supabase
       .from("ideas")
       .insert({
         user_id: session.user.id,
         title: parsed.title,
-        original_paste: pastedText,
+        original_paste: null,
         polished_content: parsed.summary,
-        ai_suggestions: parsed, // store full JSON as jsonb
+        ai_suggestions: parsed,
         is_upgraded: false,
       })
       .select()

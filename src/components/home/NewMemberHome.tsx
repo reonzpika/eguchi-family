@@ -105,7 +105,7 @@ export function NewMemberHome({ name }: NewMemberHomeProps) {
       <div className="flex flex-col gap-3">
         {/* Card 1: Yes, I have an idea */}
         <button
-          onClick={() => router.push("/onboarding")}
+          onClick={() => router.push("/ideas/new")}
           className="rounded-2xl bg-gradient-to-br from-primary to-[#F9826B] p-5 text-left shadow-lg transition-transform active:scale-[0.98]"
         >
           <div className="mb-2 text-3xl">✨</div>

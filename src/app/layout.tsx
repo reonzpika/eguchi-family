@@ -11,7 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "江口ファミリーハブ",
+  title: "Family Workspace",
   description: "江口ファミリーのプライベートワークスペース",
   manifest: "/manifest.json",
 };
