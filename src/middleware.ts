@@ -33,6 +33,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // POST /discovery: rewrite to API so clients that post to page path still work
+  if (pathname === "/discovery" && req.method === "POST") {
+    return NextResponse.rewrite(new URL("/api/discovery/complete", req.url));
+  }
+
   // First-time gate: redirect to discovery if not completed
   if (!isDiscoveryRoute(pathname)) {
     const discoveryCompleted = req.cookies.get("discovery_completed")?.value;
