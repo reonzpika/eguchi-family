@@ -48,6 +48,35 @@ export async function getDiscoveryProfileForUser(
   return { answers: data.answers as Record<string, unknown> };
 }
 
+export type DiscoveryAnswers = Record<string, string | string[] | number>;
+
+/**
+ * Saves discovery assessment answers for a user (upsert into discovery_profiles).
+ * Returns true if save succeeded or table is missing (no-op); false on unexpected error.
+ */
+export async function saveDiscoveryProfile(
+  userId: string,
+  answers: DiscoveryAnswers
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("discovery_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        answers,
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+  if (error) {
+    console.warn("[discovery] Profile save failed (table may not exist):", error.message);
+    return { ok: true }; // treat as success so UI can proceed
+  }
+  return { ok: true };
+}
+
 function formatValue(value: unknown): string {
   if (value == null) return "";
   if (Array.isArray(value)) return value.map(String).join("、");

@@ -4,9 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { saveDiscoveryProfile } from "@/lib/discovery-profile";
 
 /**
- * POST /api/discovery/complete
- * Saves discovery assessment answers to the user's profile (discovery_profiles).
- * Call this when the user finishes the discovery flow.
+ * POST /discovery
+ * Saves discovery assessment answers (same as POST /api/discovery/complete).
+ * Handles clients that POST to the page path instead of the API path.
  */
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

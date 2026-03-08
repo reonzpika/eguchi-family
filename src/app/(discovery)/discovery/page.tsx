@@ -216,6 +216,7 @@ export default function DiscoveryPage() {
 
   return (
     <AssessmentQuestion
+      key={step}
       question={currentQuestion}
       onAnswer={handleAnswer}
       progress={progress}

@@ -94,6 +94,13 @@ export function AssessmentQuestion({
           >
             次へ →
           </button>
+          <button
+            type="button"
+            onClick={() => onAnswer("")}
+            className="min-h-[48px] w-full rounded-xl border-2 border-border-warm bg-white px-5 py-3.5 font-semibold text-muted transition-transform active:scale-[0.97]"
+          >
+            わからない
+          </button>
         </div>
       )}
 
