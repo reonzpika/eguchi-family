@@ -38,6 +38,8 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 | 2026-03-08 | Phase 3 execution (docs/phase-3-execution.md) fully implemented. | Migration: projects.ai_insight, ai_insight_updated_at, last_activity_at; living_documents.updated_by; activity_type ai_insight. At A Glance: colours, AI insight, sticky. Milestones: auto-activate next, start confirmation, celebration/What's next modals, POST project milestones for custom. Feed: infinite scroll, idea_started on chat/start, ActivityCard AI style and click-to-project. Activity tab, LivingDocSections collapsible, reflection wizard + blocker chips, PushPermissionPrompt on home with denied banner. |
 | 2026-03-08 | IdeaCard "プロジェクトに昇格" did nothing on click (portal + router.push). | Replaced menu item with Next.js Link to `/ideas/[id]/upgrade` for reliable navigation; added Playwright test (skips when no ideas). |
 | 2026-03-08 | Phase 2 validation step before upgrade (phase-2-validation.md). | Added POST /api/ideas/[id]/validate (OpenAI validation summary), /ideas/[id]/validate page; all upgrade entry points now go to validate first, then link to upgrade. |
+| 2026-03-09 | PWA install prompt after first discovery. | PwaInstallPrompt shows 5s after landing on home with sessionStorage flag; mobile-only; beforeinstallprompt (Android) or instructions (iOS); localStorage prevents re-show. |
+
 
 ## Next Iteration Plan
 
@@ -55,7 +57,7 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 | Ideas                | Main page /ideas (list), /ideas/new (chat-only), chat (Claude), save (single 保存 + 3-dot: Rename, Move to project), AI summary on every save, sticky header, resume (draft/summary), validate step then upgrade | -                                             |
 | Projects             | Create, living doc, versions, milestones, tasks, reflections tab; At A Glance (AI insight, progress colours, sticky); Activity tab; milestone flows (auto-activate, confirm start, celebration, What's next, add custom); living doc collapsible + updated_by | -                                             |
 | Feed & collaboration | Activity feed (infinite scroll, idea_started, AI insight style, click-to-project), comments tab, reactions, CommentThread/Input | @mention notifications                        |
-| Notifications        | In-app bell, NotificationList, push subscribe/unsubscribe, Friday 7pm API; PushPermissionPrompt on home (first-time, denied banner) | Push send (needs VAPID keys in prod) |
+| Notifications        | In-app bell, NotificationList, push subscribe/unsubscribe, Friday 7pm API; PushPermissionPrompt on home (first-time, denied banner); PwaInstallPrompt 5s after first discovery (mobile, add to home) | Push send (needs VAPID keys in prod) |
 | Reflections          | Conversational wizard (Q1 → Q2 → Q3), blocker chips, API and project ai_insight update | -                                             |
 | Project chat         | -                                                                | Chat UI, web search, living-doc popup (Epic 7)|
 

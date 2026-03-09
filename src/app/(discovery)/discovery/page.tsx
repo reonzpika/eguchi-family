@@ -142,6 +142,9 @@ export default function DiscoveryPage() {
         return;
       }
       setDiscoveryCompletedCookie();
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem("show_pwa_install_prompt", "1");
+      }
       router.push("/");
       router.refresh();
     } catch {

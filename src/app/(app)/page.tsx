@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { ActivityCard, type ActivityWithUser } from "@/components/feed/ActivityCard";
 import { StatsCards } from "@/components/feed/StatsCards";
+import { PwaInstallPrompt } from "@/components/notifications/PwaInstallPrompt";
 import { PushPermissionPrompt } from "@/components/notifications/PushPermissionPrompt";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 
@@ -125,6 +126,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
       <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
 
+      <PwaInstallPrompt />
       <PushPermissionPrompt />
 
       {stats ? (
