@@ -28,6 +28,7 @@ interface Project {
   user_id: string;
   progress_percentage?: number;
   ai_insight?: string | null;
+  shared_with_all?: boolean;
   users: {
     name: string;
     avatar_color: string | null;
@@ -143,7 +144,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
         };
 
         setProject(projectWithOwner);
-        setIsOwner(projectData.user_id === userId);
+        setIsOwner(projectData.user_id === userId || !!projectData.shared_with_all);
 
         // Fetch latest living document
         const { data: latestDocData } = await supabase
@@ -602,7 +603,9 @@ export default function ProjectDetailPage({ params }: PageProps) {
     return null;
   }
 
-  const ownerName = project.users?.name || "不明";
+  const ownerName = project.shared_with_all
+    ? "家族"
+    : (project.users?.name || "不明");
 
   return (
     <div className="flex h-full min-h-0 flex-col">

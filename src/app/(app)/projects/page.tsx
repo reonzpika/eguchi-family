@@ -16,6 +16,7 @@ interface Project {
   visibility: string;
   created_at: string;
   progress_percentage?: number;
+  shared_with_all?: boolean;
   users: {
     name: string;
     avatar_color: string | null;
@@ -207,8 +208,12 @@ export default function ProjectsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {filteredProjects.map((project) => {
-            const ownerName = project.users?.name || "不明";
-            const ownerColor = project.users?.avatar_color || "#F97B6B";
+            const ownerName = project.shared_with_all
+              ? "家族"
+              : (project.users?.name || "不明");
+            const ownerColor = project.shared_with_all
+              ? "#7CC9A0"
+              : (project.users?.avatar_color || "#F97B6B");
             const statusLabel = getStatusLabel(project.status);
 
             return (

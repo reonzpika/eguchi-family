@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
+import { canEditProject } from "@/lib/project-permissions";
 import type { MilestoneWithTasks } from "@/types/database";
 
 export async function GET(
@@ -129,7 +130,7 @@ export async function POST(
     const admin = createAdminClient();
     const { data: project, error: projectError } = await admin
       .from("projects")
-      .select("id, user_id")
+      .select("id, user_id, shared_with_all")
       .eq("id", projectId)
       .single();
 
@@ -140,7 +141,7 @@ export async function POST(
       );
     }
 
-    if (project.user_id !== session.user.id) {
+    if (!canEditProject(project, session.user.id)) {
       return NextResponse.json(
         { error: "このプロジェクトを編集する権限がありません。" },
         { status: 403 }

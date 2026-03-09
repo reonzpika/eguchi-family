@@ -18,9 +18,13 @@ export async function GET(request: NextRequest) {
     const admin = createAdminClient();
     const { data: projects } = await admin
       .from("projects")
-      .select("user_id");
+      .select("user_id, shared_with_all");
 
-    const userIds = [...new Set((projects ?? []).map((p) => p.user_id))];
+    const userIds = [...new Set(
+      (projects ?? [])
+        .filter((p) => !p.shared_with_all)
+        .map((p) => p.user_id)
+    )];
 
     let created = 0;
     for (const userId of userIds) {

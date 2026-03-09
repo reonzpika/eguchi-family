@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
 import { updateProjectAiInsight } from "@/lib/project-ai-insight";
+import { canEditProject } from "@/lib/project-permissions";
 import type { Reflection } from "@/types/database";
 
 function getStartOfWeekISO(): string {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     const { data: project, error: projectError } = await supabase
       .from("projects")
-      .select("id, title, user_id")
+      .select("id, title, user_id, shared_with_all")
       .eq("id", projectId)
       .single();
 
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (project.user_id !== session.user.id) {
+    if (!canEditProject(project, session.user.id)) {
       return NextResponse.json(
         { error: "このプロジェクトの振り返りを送信する権限がありません。" },
         { status: 403 }

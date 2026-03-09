@@ -1,11 +1,12 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
-import { createServerComponentClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import resend from "@/lib/resend";
 import { render } from "@react-email/render";
 import ProjectUpdatedEmail from "@/lib/emails/ProjectUpdatedEmail";
 import { authOptions } from "@/lib/auth";
+import { canEditProject } from "@/lib/project-permissions";
 
 const UPDATE_SYSTEM_PROMPT = `あなたは江口ファミリーの専用AIビジネスコーチです。
 既存のリビングドキュメントに新しい内容を自然に統合してください。
@@ -42,12 +43,12 @@ export async function POST(
       );
     }
 
-    const supabase = await createServerComponentClient();
+    const supabase = createAdminClient();
 
     // Fetch project and verify ownership
     const { data: project, error: projectError } = await supabase
       .from("projects")
-      .select("id, user_id, title")
+      .select("id, user_id, shared_with_all, title")
       .eq("id", projectId)
       .single();
 
@@ -58,7 +59,7 @@ export async function POST(
       );
     }
 
-    if (project.user_id !== session.user.id) {
+    if (!canEditProject(project, session.user.id)) {
       return NextResponse.json(
         { error: "このプロジェクトを更新する権限がありません。" },
         { status: 403 }

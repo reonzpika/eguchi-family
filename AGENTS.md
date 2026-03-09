@@ -9,6 +9,7 @@ Build and refine the **Family Workspace** (江口ファミリー): a private web
 - **Complete:** Phase 1 (Foundation and authentication); Phase 2 (Idea discovery, /ideas/new chat-only flow, AI chat, finalize, save, upgrade to project); Phase 3 core and execution (project creation, living document, version history, milestones UI, task completion, reflections tab and API; At A Glance AI insight, progress bar colours, sticky; Activity tab; milestone auto-activate, manual start confirmation, celebration and What's next modals, add custom milestone; feed infinite scroll, idea_started, click-to-navigate, AI insight card style; living doc collapsible sections and "Last updated by AI"; conversational reflection wizard with blocker chips; push prompt on home, denied banner, localStorage for prompt-seen). AI migration (idea chat uses Claude; finalize/create/update use OpenAI). Phase 4 (Activity feed, comments, reactions, feed UI, project comments tab). Phase 5–6 (Notifications in-app bell and list, push subscribe/unsubscribe, Friday 7pm cron API). Success = tests pass, docs accurate, no regressions.
 - **In Progress:** None.
 - **Pending:** Phase 7 optional (Project chat, web search, living-doc popup). @mentions in comments (extract only; no mention notification yet).
+- **Complete:** Shared project (shared_with_all): admin creates "Family Workspace アプリ改善" project; all members can edit; activity shows "家族"; Friday reminder skipped.
 
 ## Development Loop
 

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
+import { canEditProject } from "@/lib/project-permissions";
 
 export async function PATCH(
   request: NextRequest,
@@ -58,11 +59,11 @@ export async function PATCH(
 
     const { data: project } = await supabase
       .from("projects")
-      .select("id, user_id")
+      .select("id, user_id, shared_with_all")
       .eq("id", milestone.project_id)
       .single();
 
-    if (!project || project.user_id !== session.user.id) {
+    if (!project || !canEditProject(project, session.user.id)) {
       return NextResponse.json(
         { error: "このタスクを編集する権限がありません。" },
         { status: 403 }

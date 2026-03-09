@@ -4,6 +4,7 @@ const memberColors: Record<string, string> = {
   Haruhi: "#B5A4E0",
   Natsumi: "#F97B6B",
   Motoharu: "#7BBFDC",
+  家族: "#7CC9A0",
 };
 
 interface AvatarProps {

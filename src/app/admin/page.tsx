@@ -1,11 +1,12 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import Link from "next/link";
+import { CreateSharedProjectButton } from "@/components/admin/CreateSharedProjectButton";
 
 export default async function AdminDashboard() {
   const supabase = createAdminClient();
 
-  // Fetch all statistics
-  const [membersResult, ideasResult, projectsResult, docsResult] =
+  // Fetch all statistics and check for shared project
+  const [membersResult, ideasResult, projectsResult, docsResult, sharedProject] =
     await Promise.all([
       supabase.from("users").select("*", { count: "exact", head: true }),
       supabase.from("ideas").select("*", { count: "exact", head: true }),
@@ -13,6 +14,12 @@ export default async function AdminDashboard() {
       supabase
         .from("living_documents")
         .select("*", { count: "exact", head: true }),
+      supabase
+        .from("projects")
+        .select("id")
+        .eq("shared_with_all", true)
+        .limit(1)
+        .maybeSingle(),
     ]);
 
   const stats = {
@@ -63,6 +70,11 @@ export default async function AdminDashboard() {
           <div className="text-xs text-muted">リビングドキュメント</div>
         </div>
       </div>
+
+      {/* Create shared project */}
+      <CreateSharedProjectButton
+        hasSharedProject={!!sharedProject.data?.id}
+      />
 
       {/* Navigation links */}
       <div className="flex flex-col gap-3">

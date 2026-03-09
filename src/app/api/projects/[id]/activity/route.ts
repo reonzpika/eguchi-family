@@ -28,7 +28,7 @@ export async function GET(
     const admin = createAdminClient();
     const { data: project } = await admin
       .from("projects")
-      .select("id")
+      .select("id, shared_with_all")
       .eq("id", projectId)
       .single();
 
@@ -68,9 +68,12 @@ export async function GET(
       ])
     );
 
+    const displayNameForShared = project.shared_with_all ? "家族" : null;
     const activitiesWithUser = activities.map((a) => ({
       ...a,
-      user: userMap.get(a.user_id) ?? { id: a.user_id, name: "不明" },
+      user: displayNameForShared
+        ? { id: a.user_id, name: displayNameForShared }
+        : (userMap.get(a.user_id) ?? { id: a.user_id, name: "不明" }),
     }));
 
     return NextResponse.json({ activities: activitiesWithUser });
