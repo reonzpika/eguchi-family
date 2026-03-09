@@ -6,7 +6,11 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BusinessSummary } from "@/components/ideas/BusinessSummary";
 import { ChatMarkdown } from "@/components/ui/ChatMarkdown";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatFooter } from "@/components/chat/ChatFooter";
+import { ChatScrollArea } from "@/components/chat/ChatScrollArea";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { useChatScroll } from "@/hooks/useChatScroll";
 
 type ChatMessage = {
   role: "agent" | "user";
@@ -51,25 +55,24 @@ export default function IdeaDetailPage({ params }: PageProps) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [renameLoading, setRenameLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastAgentMessageRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const {
+    scrollContainerRef,
+    messagesEndRef,
+    lastAgentMessageRef,
+    showScrollToBottom,
+    scrollToBottom,
+    setSkipNextScroll,
+  } = useChatScroll({ chatHistory, skipInitialScroll: true });
 
   useEffect(() => {
     if (idea?.chat_history && Array.isArray(idea.chat_history)) {
-      setChatHistory(idea.chat_history);
+      const history = idea.chat_history;
+      setChatHistory(history);
+      if (history.length > 0) setSkipNextScroll(true);
     }
-  }, [idea?.id, idea?.chat_history]);
-
-  useEffect(() => {
-    if (chatHistory.length === 0) return;
-    const last = chatHistory[chatHistory.length - 1];
-    if (last.role === "agent") {
-      lastAgentMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory]);
+  }, [idea?.id, idea?.chat_history, setSkipNextScroll]);
 
   const handleSendMessage = async (message: string) => {
     if (!idea || !message.trim() || chatLoading) return;
@@ -261,86 +264,86 @@ export default function IdeaDetailPage({ params }: PageProps) {
 
   if (isDraft) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-10 border-b border-border-warm bg-white px-4 py-3">
-          <div className="flex items-center justify-between gap-2">
-            <Link
-              href="/ideas"
-              className="flex h-11 w-11 min-h-[44px] items-center justify-center rounded-lg border border-border-warm bg-white text-base"
+      <div className="flex h-full flex-col">
+        <ChatHeader
+          onBack={() => router.push("/ideas")}
+          title={title || "アイデアを育てる"}
+        >
+          {saveSuccess && (
+            <span className="text-xs text-success">保存しました</span>
+          )}
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={saveLoading || chatHistory.length === 0}
+            className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.97] disabled:opacity-50"
+          >
+            {saveLoading ? "保存中..." : "保存"}
+          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex h-11 w-11 min-h-[44px] items-center justify-center rounded-lg border border-border-warm bg-white text-foreground transition-transform active:scale-[0.97]"
+              aria-expanded={menuOpen}
+              aria-haspopup="true"
             >
-              ←
-            </Link>
-            <h2 className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-foreground">
-              {title || "アイデアを育てる"}
-            </h2>
-            <div className="flex shrink-0 items-center gap-2">
-              {saveSuccess && (
-                <span className="text-xs text-success">保存しました</span>
-              )}
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={saveLoading || chatHistory.length === 0}
-                className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.97] disabled:opacity-50"
-              >
-                {saveLoading ? "保存中..." : "保存"}
-              </button>
-              <div className="relative" ref={menuRef}>
+              ⋮
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-border-warm bg-white py-1 shadow-lg">
                 <button
                   type="button"
-                  onClick={() => setMenuOpen((o) => !o)}
-                  className="flex h-11 w-11 min-h-[44px] items-center justify-center rounded-lg border border-border-warm bg-white text-foreground transition-transform active:scale-[0.97]"
-                  aria-expanded={menuOpen}
-                  aria-haspopup="true"
+                  onClick={() => {
+                    setRenameValue(title);
+                    setRenameOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
                 >
-                  ⋮
+                  タイトルを変更
                 </button>
-                {menuOpen && (
-                  <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-border-warm bg-white py-1 shadow-lg">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRenameValue(title);
-                        setRenameOpen(true);
-                        setMenuOpen(false);
-                      }}
-                      className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
-                    >
-                      タイトルを変更
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push(`/ideas/${idea.id}/validate`);
-                      }}
-                      className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
-                    >
-                      プロジェクトに昇格
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push(`/ideas/${idea.id}/validate`);
+                  }}
+                  className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
+                >
+                  プロジェクトに昇格
+                </button>
               </div>
-            </div>
+            )}
           </div>
-        </header>
-        <div className="flex flex-1 flex-col overflow-hidden px-5 py-4">
+        </ChatHeader>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-4">
           {idea.chat_summary && (
-            <div className="mb-4 rounded-2xl border border-border-warm bg-white p-4">
-              <p className="mb-1 text-xs font-semibold text-muted">これまでの話</p>
+            <div className="mb-4 shrink-0 rounded-2xl border border-border-warm bg-white p-4">
+              <p className="mb-1 text-xs font-semibold text-muted">
+                これまでの話
+              </p>
               <p className="text-sm text-foreground">{idea.chat_summary}</p>
             </div>
           )}
           {chatError && (
-            <div className="mb-4">
+            <div className="mb-4 shrink-0">
               <ErrorMessage message={chatError} />
             </div>
           )}
-          <div className="flex-1 space-y-4 overflow-y-auto pb-4 min-h-0">
+          <ChatScrollArea
+            ref={scrollContainerRef}
+            showScrollToBottom={showScrollToBottom}
+            onScrollToBottom={scrollToBottom}
+          >
             {chatHistory.map((msg, idx) => (
               <div
                 key={idx}
-                ref={idx === chatHistory.length - 1 && msg.role === "agent" ? lastAgentMessageRef : undefined}
+                ref={
+                  idx === chatHistory.length - 1 && msg.role === "agent"
+                    ? lastAgentMessageRef
+                    : undefined
+                }
               >
                 {msg.role === "agent" ? (
                   <div className="flex flex-col gap-2">
@@ -365,34 +368,14 @@ export default function IdeaDetailPage({ params }: PageProps) {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </ChatScrollArea>
           {!isComplete && (
-            <div className="border-t border-border-warm bg-white pt-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage(currentInput);
-                    }
-                  }}
-                  placeholder="メッセージを入力..."
-                  disabled={chatLoading}
-                  className="flex-1 rounded-xl border border-border-warm bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSendMessage(currentInput)}
-                  disabled={!currentInput.trim() || chatLoading}
-                  className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
-                >
-                  送信
-                </button>
-              </div>
-            </div>
+            <ChatFooter
+              value={currentInput}
+              onChange={setCurrentInput}
+              onSend={() => handleSendMessage(currentInput)}
+              disabled={chatLoading}
+            />
           )}
           {isComplete && (
             <button

@@ -129,20 +129,43 @@ export async function POST(request: NextRequest) {
       }
 
       const full = await generateFullSummary(chatHistory as Message[]);
-      if (full) {
-        await supabase
-          .from("ideas")
-          .update({
-            polished_content: full.summary,
-            ai_suggestions: {
-              title: full.title,
-              summary: full.summary,
-              suggestions: full.suggestions,
-              nextStep: full.nextStep,
-            },
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", ideaId);
+      const polishedContent =
+        full?.summary || chatSummary || "会話の続きを保存しました。";
+      const aiSuggestions = full
+        ? {
+            title: full.title,
+            summary: full.summary,
+            suggestions: full.suggestions,
+            nextStep: full.nextStep,
+          }
+        : {
+            title,
+            summary: chatSummary || "",
+            suggestions: [] as string[],
+            nextStep: "会話を続けてください",
+          };
+
+      if (!full) {
+        console.warn(
+          "[ideas/chat/save] generateFullSummary returned null for ideaId:",
+          ideaId
+        );
+      }
+
+      const { error: polishError } = await supabase
+        .from("ideas")
+        .update({
+          polished_content: polishedContent,
+          ai_suggestions: aiSuggestions,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", ideaId);
+
+      if (polishError) {
+        console.error(
+          "[ideas/chat/save] Failed to update polished_content:",
+          polishError
+        );
       }
 
       return NextResponse.json({
@@ -182,20 +205,43 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
 
     const full = await generateFullSummary(chatHistory as Message[]);
-    if (full) {
-      await supabase
-        .from("ideas")
-        .update({
-          polished_content: full.summary,
-          ai_suggestions: {
-            title: full.title,
-            summary: full.summary,
-            suggestions: full.suggestions,
-            nextStep: full.nextStep,
-          },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", idea.id);
+    const polishedContent =
+      full?.summary || chatSummary || "会話の続きを保存しました。";
+    const aiSuggestions = full
+      ? {
+          title: full.title,
+          summary: full.summary,
+          suggestions: full.suggestions,
+          nextStep: full.nextStep,
+        }
+      : {
+          title,
+          summary: chatSummary || "",
+          suggestions: [] as string[],
+          nextStep: "会話を続けてください",
+        };
+
+    if (!full) {
+      console.warn(
+        "[ideas/chat/save] generateFullSummary returned null for new idea:",
+        idea.id
+      );
+    }
+
+    const { error: polishError } = await supabase
+      .from("ideas")
+      .update({
+        polished_content: polishedContent,
+        ai_suggestions: aiSuggestions,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", idea.id);
+
+    if (polishError) {
+      console.error(
+        "[ideas/chat/save] Failed to update polished_content:",
+        polishError
+      );
     }
 
     return NextResponse.json({
