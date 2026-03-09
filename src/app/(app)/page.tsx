@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { ActivityCard, type ActivityWithUser } from "@/components/feed/ActivityCard";
 import { StatsCards } from "@/components/feed/StatsCards";
 import { PushPermissionPrompt } from "@/components/notifications/PushPermissionPrompt";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 
 interface Stats {
   ideaCount: number;
@@ -106,7 +107,7 @@ export default function HomePage() {
     return (
       <div className="min-h-screen bg-bg-warm px-4 pb-24 pt-6">
         <h1 className="mb-4 text-xl font-bold text-foreground">家族の活動</h1>
-        <p className="text-muted">読み込み中...</p>
+        <PageSkeleton variant="list" />
       </div>
     );
   }

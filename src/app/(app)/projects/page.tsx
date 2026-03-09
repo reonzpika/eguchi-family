@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Avatar } from "@/components/ui/Avatar";
-import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -29,7 +29,7 @@ interface ProjectWithDescription extends Project {
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [projects, setProjects] = useState<ProjectWithDescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,31 +38,33 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     async function fetchProjects() {
-      if (!session?.user?.id) {
+      if (sessionStatus === "unauthenticated") {
         setLoading(false);
         return;
       }
+      if (sessionStatus !== "authenticated" || !session?.user?.id) return;
 
       try {
         const res = await fetch("/api/projects");
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           setError(errData.error ?? "プロジェクトの読み込みに失敗しました");
-          setLoading(false);
-          return;
+          setProjects([]);
+        } else {
+          const data = await res.json();
+          setProjects((data.projects ?? []) as ProjectWithDescription[]);
         }
-        const data = await res.json();
-        setProjects((data.projects ?? []) as ProjectWithDescription[]);
       } catch (error) {
         console.error("Error:", error);
         setError("データの読み込みに失敗しました");
+        setProjects([]);
       } finally {
         setLoading(false);
       }
     }
 
     fetchProjects();
-  }, [session?.user?.id]);
+  }, [sessionStatus, session?.user?.id]);
 
   const userId = session?.user?.id ?? "";
 
@@ -98,15 +100,9 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-140px)] flex-col gap-4 px-5 py-6">
-        <SkeletonCard height="h-8" className="w-32" />
-        <div className="flex gap-2">
-          <SkeletonCard height="h-10" className="w-20" />
-          <SkeletonCard height="h-10" className="w-20" />
-          <SkeletonCard height="h-10" className="w-20" />
-        </div>
-        <SkeletonCard height="h-40" />
-        <SkeletonCard height="h-40" />
+      <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
+        <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
+        <PageSkeleton variant="default" />
       </div>
     );
   }

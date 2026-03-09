@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { createClientComponentClient } from "@/lib/supabase-client";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/ui/Avatar";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
@@ -50,7 +51,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const router = useRouter();
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const supabase = createClientComponentClient();
   const [project, setProject] = useState<Project | null>(null);
   const [latestDoc, setLatestDoc] = useState<LivingDocument | null>(null);
@@ -110,11 +111,17 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   useEffect(() => {
     async function fetchData() {
-      const userId = session?.user?.id;
-      if (!projectId || !userId) {
+      if (!projectId) {
         setLoading(false);
         return;
       }
+      if (sessionStatus === "unauthenticated") {
+        setLoading(false);
+        return;
+      }
+      if (sessionStatus !== "authenticated" || !session?.user?.id) return;
+
+      const userId = session.user.id;
 
       try {
         // Fetch project
@@ -189,7 +196,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
     }
 
     fetchData();
-  }, [projectId, supabase, session?.user?.id, router]);
+  }, [projectId, supabase, sessionStatus, session?.user?.id, router]);
 
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -577,10 +584,13 @@ export default function ProjectDetailPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col px-5 py-6">
-        <SkeletonCard height="h-6" className="w-16 mb-4" />
-        <SkeletonCard height="h-8" className="w-24 mb-6" />
-        <SkeletonCard height="h-12" className="mb-6" />
-        <SkeletonCard height="h-40" />
+        <button
+          onClick={() => router.push("/projects")}
+          className="mb-4 inline-flex text-sm text-primary"
+        >
+          ← 戻る
+        </button>
+        <PageSkeleton variant="detail" />
       </div>
     );
   }
