@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
     const list = hasMore ? activities.slice(0, limit) : activities;
 
     const userIds = [...new Set(list.map((a) => a.user_id))];
+    const projectIds = [...new Set(list.map((a) => a.project_id).filter(Boolean))] as string[];
+
     const { data: usersData } = await admin
       .from("users")
       .select("id, name")
@@ -57,10 +59,26 @@ export async function GET(request: NextRequest) {
       (usersData ?? []).map((u: { id: string; name: string | null }) => [u.id, { id: u.id, name: u.name ?? "不明" }])
     );
 
-    const activitiesWithUser = list.map((a) => ({
-      ...a,
-      user: userMap.get(a.user_id) ?? { id: a.user_id, name: "不明" },
-    }));
+    let sharedProjectIds = new Set<string>();
+    if (projectIds.length > 0) {
+      const { data: sharedProjects } = await admin
+        .from("projects")
+        .select("id")
+        .in("id", projectIds)
+        .eq("shared_with_all", true);
+      sharedProjectIds = new Set((sharedProjects ?? []).map((p: { id: string }) => p.id));
+    }
+
+    const activitiesWithUser = list.map((a) => {
+      const displayName =
+        a.project_id && sharedProjectIds.has(a.project_id)
+          ? "家族"
+          : (userMap.get(a.user_id)?.name ?? "不明");
+      return {
+        ...a,
+        user: { id: a.user_id, name: displayName },
+      };
+    });
 
     return NextResponse.json({
       activities: activitiesWithUser,

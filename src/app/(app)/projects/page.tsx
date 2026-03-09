@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { createClientComponentClient } from "@/lib/supabase-client";
+import { MoreVertical } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
-import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -15,7 +15,9 @@ interface Project {
   status: string;
   visibility: string;
   created_at: string;
+  user_id: string;
   progress_percentage?: number;
+  shared_with_all?: boolean;
   users: {
     name: string;
     avatar_color: string | null;
@@ -28,111 +30,74 @@ interface ProjectWithDescription extends Project {
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { data: session } = useSession();
-  const supabase = createClientComponentClient();
+  const { data: session, status: sessionStatus } = useSession();
   const [projects, setProjects] = useState<ProjectWithDescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("すべて");
+  const [ownershipFilter, setOwnershipFilter] = useState<"mine" | "others">("mine");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!filterMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (filterMenuRef.current && !filterMenuRef.current.contains(target)) {
+        setFilterMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [filterMenuOpen]);
 
   useEffect(() => {
     async function fetchProjects() {
-      if (!session?.user?.id) {
+      if (sessionStatus === "unauthenticated") {
         setLoading(false);
         return;
       }
+      if (sessionStatus !== "authenticated" || !session?.user?.id) return;
 
       try {
-        // Fetch all projects
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("projects")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (projectsError) {
-          console.error("Error fetching projects:", projectsError);
-          setError("プロジェクトの読み込みに失敗しました");
-          setLoading(false);
-          return;
-        }
-
-        if (!projectsData || projectsData.length === 0) {
+        const res = await fetch("/api/projects");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          setError(errData.error ?? "プロジェクトの読み込みに失敗しました");
           setProjects([]);
-          setLoading(false);
-          return;
+        } else {
+          const data = await res.json();
+          setProjects((data.projects ?? []) as ProjectWithDescription[]);
         }
-
-        // Fetch user info for all projects
-        const userIds = [...new Set(projectsData.map((p) => p.user_id))];
-        const { data: usersData, error: usersError } = await supabase
-          .from("users")
-          .select("id, name, avatar_color")
-          .in("id", userIds);
-
-        if (usersError) {
-          console.error("Error fetching users:", usersError);
-          setError("ユーザー情報の読み込みに失敗しました");
-          setLoading(false);
-          return;
-        }
-
-        // Create user map
-        const userMap = new Map(
-          (usersData || []).map((u) => [
-            u.id,
-            { name: u.name, avatar_color: u.avatar_color },
-          ])
-        );
-
-        // For each project, get the latest living document for description
-        const projectsWithDesc: ProjectWithDescription[] = await Promise.all(
-          projectsData.map(async (project) => {
-            const { data: latestDoc } = await supabase
-              .from("living_documents")
-              .select("content")
-              .eq("project_id", project.id)
-              .order("version_number", { ascending: false })
-              .limit(1)
-              .single();
-
-            const description = latestDoc?.content
-              ? latestDoc.content.slice(0, 60).replace(/\n/g, " ")
-              : "説明なし";
-
-            const userInfo = userMap.get(project.user_id) || {
-              name: "不明",
-              avatar_color: null,
-            };
-
-            return {
-              ...project,
-              users: userInfo,
-              description,
-            };
-          })
-        );
-
-        setProjects(projectsWithDesc);
       } catch (error) {
         console.error("Error:", error);
         setError("データの読み込みに失敗しました");
+        setProjects([]);
       } finally {
         setLoading(false);
       }
     }
 
     fetchProjects();
-  }, [supabase, session?.user?.id]);
+  }, [sessionStatus, session?.user?.id]);
 
-  const filteredProjects =
-    filter === "すべて"
-      ? projects
-      : projects.filter((p) => {
-          if (filter === "進行中") return p.status === "active";
-          if (filter === "計画中") return p.status === "planning";
-          if (filter === "完了") return p.status === "complete";
-          return true;
-        });
+  const userId = session?.user?.id ?? "";
+
+  const filteredProjects = projects.filter((p) => {
+    if (ownershipFilter === "mine") {
+      const isMine = p.user_id === userId || !!p.shared_with_all;
+      if (!isMine) return false;
+    } else {
+      const isOthers = p.user_id !== userId && !p.shared_with_all;
+      if (!isOthers) return false;
+    }
+
+    if (statusFilter === "all") return true;
+    if (statusFilter === "active") return p.status === "active";
+    if (statusFilter === "planning") return p.status === "planning";
+    if (statusFilter === "complete") return p.status === "complete";
+    return true;
+  });
 
   const getStatusColor = (status: string) => {
     if (status === "計画中") return "bg-secondary text-white";
@@ -148,17 +113,18 @@ export default function ProjectsPage() {
     return status;
   };
 
+  const statusOptions = [
+    { value: "all", label: "すべて" },
+    { value: "active", label: "進行中" },
+    { value: "planning", label: "計画中" },
+    { value: "complete", label: "完了" },
+  ];
+
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-140px)] flex-col gap-4 px-5 py-6">
-        <SkeletonCard height="h-8" className="w-32" />
-        <div className="flex gap-2">
-          <SkeletonCard height="h-10" className="w-20" />
-          <SkeletonCard height="h-10" className="w-20" />
-          <SkeletonCard height="h-10" className="w-20" />
-        </div>
-        <SkeletonCard height="h-40" />
-        <SkeletonCard height="h-40" />
+      <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
+        <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
+        <PageSkeleton variant="default" />
       </div>
     );
   }
@@ -177,38 +143,97 @@ export default function ProjectsPage() {
       {/* Page title */}
       <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
 
-      {/* Filter tabs */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {["すべて", "進行中", "計画中", "完了"].map((tab) => (
+      {/* Ownership filter + status menu */}
+      <div className="mb-6 flex items-center justify-between gap-2">
+        <div className="flex gap-2">
+          {[
+            { value: "mine" as const, label: "自分の" },
+            { value: "others" as const, label: "家族の" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setOwnershipFilter(value)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                ownershipFilter === value
+                  ? "bg-primary text-white"
+                  : "bg-white text-foreground border border-border-warm"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative shrink-0" ref={filterMenuRef}>
           <button
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              filter === tab
-                ? "bg-primary text-white"
-                : "bg-white text-foreground border border-border-warm"
-            }`}
+            type="button"
+            onClick={() => setFilterMenuOpen((o) => !o)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-warm bg-white text-muted transition-colors hover:bg-gray-50"
+            aria-label="フィルター"
+            aria-expanded={filterMenuOpen}
           >
-            {tab}
+            <MoreVertical size={20} strokeWidth={2} />
           </button>
-        ))}
+
+          {filterMenuOpen && (
+            <div
+              className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-xl border border-border-warm bg-white py-1 shadow-lg"
+              role="menu"
+            >
+              {statusOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setStatusFilter(value);
+                    setFilterMenuOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-sm ${
+                    statusFilter === value
+                      ? "bg-primary/10 font-semibold text-primary"
+                      : "text-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {filteredProjects.length === 0 ? (
         <EmptyState
           emoji="📁"
-          title="まだプロジェクトはありません"
-          description="アイデアをプロジェクトに昇格させましょう"
-          action={{
-            label: "アイデアをプロジェクトに昇格させる →",
-            onClick: () => router.push("/ideas"),
-          }}
+          title={
+            ownershipFilter === "others"
+              ? "家族のプロジェクトはまだありません"
+              : "自分のプロジェクトはまだありません"
+          }
+          description={
+            ownershipFilter === "mine"
+              ? "アイデアをプロジェクトに昇格させましょう"
+              : "家族がプロジェクトを作成するとここに表示されます"
+          }
+          action={
+            ownershipFilter === "mine"
+              ? {
+                  label: "アイデアをプロジェクトに昇格させる →",
+                  onClick: () => router.push("/ideas"),
+                }
+              : undefined
+          }
         />
       ) : (
         <div className="flex flex-col gap-4">
           {filteredProjects.map((project) => {
-            const ownerName = project.users?.name || "不明";
-            const ownerColor = project.users?.avatar_color || "#F97B6B";
+            const ownerName = project.shared_with_all
+              ? "家族"
+              : (project.users?.name || "不明");
+            const ownerColor = project.shared_with_all
+              ? "#7CC9A0"
+              : (project.users?.avatar_color || "#F97B6B");
             const statusLabel = getStatusLabel(project.status);
 
             return (

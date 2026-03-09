@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
 import { sendNotification } from "@/lib/notifications";
 import { generateMilestoneCompleteInsight } from "@/lib/project-ai-insight";
+import { canEditProject } from "@/lib/project-permissions";
 
 export async function POST(
   request: NextRequest,
@@ -45,11 +46,11 @@ export async function POST(
 
     const { data: project } = await supabase
       .from("projects")
-      .select("id, user_id")
+      .select("id, user_id, shared_with_all")
       .eq("id", milestone.project_id)
       .single();
 
-    if (!project || project.user_id !== session.user.id) {
+    if (!project || !canEditProject(project, session.user.id)) {
       return NextResponse.json(
         { error: "このマイルストーンを編集する権限がありません。" },
         { status: 403 }
