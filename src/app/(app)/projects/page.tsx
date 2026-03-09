@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { MoreVertical } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -35,6 +36,20 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [ownershipFilter, setOwnershipFilter] = useState<"mine" | "others">("mine");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!filterMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (filterMenuRef.current && !filterMenuRef.current.contains(target)) {
+        setFilterMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [filterMenuOpen]);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -98,6 +113,13 @@ export default function ProjectsPage() {
     return status;
   };
 
+  const statusOptions = [
+    { value: "all", label: "すべて" },
+    { value: "active", label: "進行中" },
+    { value: "planning", label: "計画中" },
+    { value: "complete", label: "完了" },
+  ];
+
   if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
@@ -121,46 +143,64 @@ export default function ProjectsPage() {
       {/* Page title */}
       <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
 
-      {/* Ownership filter */}
-      <div className="mb-3 flex gap-2 overflow-x-auto pb-2">
-        {[
-          { value: "mine" as const, label: "自分の" },
-          { value: "others" as const, label: "家族の" },
-        ].map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setOwnershipFilter(value)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              ownershipFilter === value
-                ? "bg-primary text-white"
-                : "bg-white text-foreground border border-border-warm"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Ownership filter + status menu */}
+      <div className="mb-6 flex items-center justify-between gap-2">
+        <div className="flex gap-2">
+          {[
+            { value: "mine" as const, label: "自分の" },
+            { value: "others" as const, label: "家族の" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setOwnershipFilter(value)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                ownershipFilter === value
+                  ? "bg-primary text-white"
+                  : "bg-white text-foreground border border-border-warm"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      {/* Status filter */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {[
-          { value: "all", label: "すべて" },
-          { value: "active", label: "進行中" },
-          { value: "planning", label: "計画中" },
-          { value: "complete", label: "完了" },
-        ].map(({ value, label }) => (
+        <div className="relative shrink-0" ref={filterMenuRef}>
           <button
-            key={value}
-            onClick={() => setStatusFilter(value)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              statusFilter === value
-                ? "bg-primary text-white"
-                : "bg-white text-foreground border border-border-warm"
-            }`}
+            type="button"
+            onClick={() => setFilterMenuOpen((o) => !o)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-warm bg-white text-muted transition-colors hover:bg-gray-50"
+            aria-label="フィルター"
+            aria-expanded={filterMenuOpen}
           >
-            {label}
+            <MoreVertical size={20} strokeWidth={2} />
           </button>
-        ))}
+
+          {filterMenuOpen && (
+            <div
+              className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-xl border border-border-warm bg-white py-1 shadow-lg"
+              role="menu"
+            >
+              {statusOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setStatusFilter(value);
+                    setFilterMenuOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-sm ${
+                    statusFilter === value
+                      ? "bg-primary/10 font-semibold text-primary"
+                      : "text-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {filteredProjects.length === 0 ? (
