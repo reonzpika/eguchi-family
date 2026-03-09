@@ -3,7 +3,11 @@
 import { use, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChatMarkdown } from "@/components/ui/ChatMarkdown";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatFooter } from "@/components/chat/ChatFooter";
+import { ChatScrollArea } from "@/components/chat/ChatScrollArea";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { useChatScroll } from "@/hooks/useChatScroll";
 
 type ChatMessage = {
   role: "agent" | "user";
@@ -35,18 +39,21 @@ export default function IdeaChatPage({ params }: PageProps) {
   const [currentInput, setCurrentInput] = useState("");
   const [chatError, setChatError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastAgentMessageRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const lastScrollTopRef = useRef(0);
-  const skipNextScrollRef = useRef(false);
   const initialHistoryLengthRef = useRef<number>(0);
   const chatHistoryRef = useRef<ChatMessage[]>([]);
-  const [headerHidden, setHeaderHidden] = useState(false);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
-  const SCROLL_THRESHOLD = 50;
+  const {
+    scrollContainerRef,
+    messagesEndRef,
+    lastAgentMessageRef,
+    showScrollToBottom,
+    scrollToBottom,
+    setSkipNextScroll,
+  } = useChatScroll({
+    chatHistory,
+    skipInitialScroll: true,
+  });
 
   useEffect(() => {
     chatHistoryRef.current = chatHistory;
@@ -69,10 +76,13 @@ export default function IdeaChatPage({ params }: PageProps) {
         }
         const data = (await res.json()) as Idea;
         setIdea(data);
-        const history = data.chat_history && Array.isArray(data.chat_history) ? data.chat_history : [];
+        const history =
+          data.chat_history && Array.isArray(data.chat_history)
+            ? data.chat_history
+            : [];
         setChatHistory(history);
         initialHistoryLengthRef.current = history.length;
-        if (history.length > 0) skipNextScrollRef.current = true;
+        if (history.length > 0) setSkipNextScroll(true);
         if (data.chat_summary) setShowSummaryModal(true);
       } catch (err) {
         console.error(err);
@@ -81,46 +91,7 @@ export default function IdeaChatPage({ params }: PageProps) {
         setLoading(false);
       }
     })();
-  }, [ideaId, router]);
-
-  useEffect(() => {
-    if (chatHistory.length === 0) return;
-    if (skipNextScrollRef.current) {
-      skipNextScrollRef.current = false;
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-      return;
-    }
-    const last = chatHistory[chatHistory.length - 1];
-    if (last.role === "agent") {
-      lastAgentMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory]);
-
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    lastScrollTopRef.current = el.scrollTop;
-    const onScroll = () => {
-      const top = el.scrollTop;
-      const prev = lastScrollTopRef.current;
-      lastScrollTopRef.current = top;
-      if (top > SCROLL_THRESHOLD && top > prev) {
-        setHeaderHidden(true);
-      } else if (top <= SCROLL_THRESHOLD || top < prev) {
-        setHeaderHidden(false);
-      }
-      const distFromBottom = el.scrollHeight - top - el.clientHeight;
-      setShowScrollToBottom(distFromBottom > 80);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  });
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, [ideaId, router, setSkipNextScroll]);
 
   const hasSubstantialChanges =
     chatHistory.length > initialHistoryLengthRef.current &&
@@ -146,8 +117,16 @@ export default function IdeaChatPage({ params }: PageProps) {
 
   useEffect(() => {
     const onBeforeUnload = () => {
-      if (!ideaId || chatHistoryRef.current.length <= initialHistoryLengthRef.current) return;
-      if (chatHistoryRef.current.length - initialHistoryLengthRef.current < SUBSTANTIAL_THRESHOLD) return;
+      if (
+        !ideaId ||
+        chatHistoryRef.current.length <= initialHistoryLengthRef.current
+      )
+        return;
+      if (
+        chatHistoryRef.current.length - initialHistoryLengthRef.current <
+        SUBSTANTIAL_THRESHOLD
+      )
+        return;
       const payload = JSON.stringify({
         ideaId: ideaId,
         chatHistory: chatHistoryRef.current,
@@ -232,10 +211,15 @@ export default function IdeaChatPage({ params }: PageProps) {
             className="scrollbar-hide max-h-[80vh] w-full max-w-[350px] overflow-y-auto rounded-2xl border border-border-warm bg-white p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <p id="summary-modal-title" className="mb-1 text-xs font-semibold text-muted">
+            <p
+              id="summary-modal-title"
+              className="mb-1 text-xs font-semibold text-muted"
+            >
               これまでの話
             </p>
-            <p className="mb-4 text-sm text-foreground">{idea.chat_summary}</p>
+            <p className="mb-4 text-sm text-foreground">
+              {idea.chat_summary}
+            </p>
             <button
               type="button"
               onClick={() => setShowSummaryModal(false)}
@@ -246,116 +230,66 @@ export default function IdeaChatPage({ params }: PageProps) {
           </div>
         </div>
       )}
-      <div
-        className={`shrink-0 overflow-hidden transition-[height] duration-200 ease-out ${
-          headerHidden ? "h-0" : "h-[69px]"
-        }`}
+      <ChatHeader
+        onBack={runSaveAndNavigate}
+        title={idea.title || "このアイデアについて話す"}
+        backDisabled={saving}
+        data-testid="idea-chat-header"
       >
-        <header
-          data-testid="idea-chat-header"
-          className={`sticky top-0 z-10 border-b border-border-warm bg-white px-4 py-3 transition-transform duration-200 ease-out ${
-            headerHidden ? "-translate-y-full" : "translate-y-0"
-          }`}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={runSaveAndNavigate}
-              disabled={saving}
-              className="flex h-11 w-11 min-h-[44px] shrink-0 items-center justify-center rounded-lg border border-border-warm bg-white text-base transition-transform active:scale-[0.97] disabled:opacity-70"
-            >
-              {saving ? "…" : "←"}
-            </button>
-            <h2 className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-foreground">
-              {idea.title || "このアイデアについて話す"}
-            </h2>
-            <div className="h-11 w-11 min-h-[44px]" aria-hidden />
-          </div>
-        </header>
-      </div>
+        <span className="w-11" aria-hidden />
+      </ChatHeader>
 
-      <div
-        className={`flex flex-1 flex-col overflow-hidden px-5 ${
-          headerHidden ? "pt-0 pb-4" : "py-4"
-        }`}
-      >
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-4">
         {chatError && (
           <div className="shrink-0 mb-4">
             <ErrorMessage message={chatError} />
           </div>
         )}
-        <div className="relative flex-1 min-h-0">
-          <div
-            ref={scrollContainerRef}
-            data-testid="idea-chat-scroll"
-            className="scrollbar-hide h-full space-y-4 overflow-y-auto pb-4"
-          >
-            {chatHistory.map((msg, idx) => (
-              <div
-                key={idx}
-                ref={idx === chatHistory.length - 1 && msg.role === "agent" ? lastAgentMessageRef : undefined}
-              >
-                {msg.role === "agent" ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-primary px-4 py-3 text-sm text-white">
-                      <ChatMarkdown>{msg.content}</ChatMarkdown>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-end">
-                    <div className="max-w-[85%] rounded-2xl rounded-br-sm border-2 border-border-warm bg-white px-4 py-3 text-sm text-foreground">
-                      <ChatMarkdown>{msg.content}</ChatMarkdown>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {chatLoading && (
-              <div className="flex gap-1">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          {showScrollToBottom && (
-            <button
-              type="button"
-              onClick={scrollToBottom}
-              aria-label="最新メッセージへ"
-              className="absolute bottom-6 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-border-warm bg-white shadow-md text-foreground transition-transform active:scale-[0.95]"
+        <ChatScrollArea
+          ref={scrollContainerRef}
+          showScrollToBottom={showScrollToBottom}
+          onScrollToBottom={scrollToBottom}
+          data-testid="idea-chat-scroll"
+        >
+          {chatHistory.map((msg, idx) => (
+            <div
+              key={idx}
+              ref={
+                idx === chatHistory.length - 1 && msg.role === "agent"
+                  ? lastAgentMessageRef
+                  : undefined
+              }
             >
-              ↓
-            </button>
+              {msg.role === "agent" ? (
+                <div className="flex flex-col gap-2">
+                  <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-primary px-4 py-3 text-sm text-white">
+                    <ChatMarkdown>{msg.content}</ChatMarkdown>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-end">
+                  <div className="max-w-[85%] rounded-2xl rounded-br-sm border-2 border-border-warm bg-white px-4 py-3 text-sm text-foreground">
+                    <ChatMarkdown>{msg.content}</ChatMarkdown>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          {chatLoading && (
+            <div className="flex gap-1">
+              <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+            </div>
           )}
-        </div>
-        <div className="border-t border-border-warm bg-white pt-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage(currentInput);
-                }
-              }}
-              placeholder="メッセージを入力..."
-              disabled={chatLoading}
-              className="flex-1 rounded-xl border border-border-warm bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="button"
-              onClick={() => handleSendMessage(currentInput)}
-              disabled={!currentInput.trim() || chatLoading}
-              className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
-            >
-              送信
-            </button>
-          </div>
-        </div>
+          <div ref={messagesEndRef} />
+        </ChatScrollArea>
+        <ChatFooter
+          value={currentInput}
+          onChange={setCurrentInput}
+          onSend={() => handleSendMessage(currentInput)}
+          disabled={chatLoading}
+        />
       </div>
     </div>
   );

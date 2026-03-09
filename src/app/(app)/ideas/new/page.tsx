@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ChatMarkdown } from "@/components/ui/ChatMarkdown";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatFooter } from "@/components/chat/ChatFooter";
+import { ChatScrollArea } from "@/components/chat/ChatScrollArea";
+import { useChatScroll } from "@/hooks/useChatScroll";
 
 type Message = {
   role: "agent" | "user";
@@ -30,8 +34,14 @@ export default function NewIdeaPage() {
   const [renameValue, setRenameValue] = useState("");
   const [renameLoading, setRenameLoading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastAgentMessageRef = useRef<HTMLDivElement>(null);
+
+  const {
+    scrollContainerRef,
+    messagesEndRef,
+    lastAgentMessageRef,
+    showScrollToBottom,
+    scrollToBottom,
+  } = useChatScroll({ chatHistory });
 
   const saveDraft = useCallback(async (): Promise<{ ideaId: string; title: string } | null> => {
     if (chatHistory.length === 0) return null;
@@ -118,16 +128,6 @@ export default function NewIdeaPage() {
   useEffect(() => {
     startChat();
   }, [startChat]);
-
-  useEffect(() => {
-    if (chatHistory.length === 0) return;
-    const last = chatHistory[chatHistory.length - 1];
-    if (last.role === "agent") {
-      lastAgentMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || chatLoading) return;
@@ -246,73 +246,59 @@ export default function NewIdeaPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <header className="shrink-0 border-b border-border-warm bg-white px-4 py-3">
-        <div className="flex items-center justify-between gap-2">
+    <div className="flex h-full flex-col overflow-hidden">
+      <ChatHeader onBack={handleBack} title={ideaTitle} backDisabled={saveLoading}>
+        {saveSuccess && (
+          <span className="text-xs text-success">保存しました</span>
+        )}
+        <button
+          type="button"
+          onClick={() => saveDraft()}
+          disabled={saveLoading || chatHistory.length === 0}
+          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.97] disabled:opacity-50"
+        >
+          {saveLoading ? "保存中..." : "保存"}
+        </button>
+        <div className="relative" ref={menuRef}>
           <button
             type="button"
-            onClick={handleBack}
-            disabled={saveLoading}
-            className="flex h-11 w-11 min-h-[44px] shrink-0 items-center justify-center rounded-lg border border-border-warm bg-white text-base transition-transform active:scale-[0.97] disabled:opacity-50"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="flex h-11 w-11 min-h-[44px] items-center justify-center rounded-lg border border-border-warm bg-white text-foreground transition-transform active:scale-[0.97]"
+            aria-expanded={menuOpen}
+            aria-haspopup="true"
           >
-            ←
+            ⋮
           </button>
-          <h2 className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-foreground">
-            {ideaTitle}
-          </h2>
-          <div className="flex shrink-0 items-center gap-2">
-            {saveSuccess && (
-              <span className="text-xs text-success">保存しました</span>
-            )}
-            <button
-              type="button"
-              onClick={() => saveDraft()}
-              disabled={saveLoading || chatHistory.length === 0}
-              className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.97] disabled:opacity-50"
-            >
-              {saveLoading ? "保存中..." : "保存"}
-            </button>
-            <div className="relative" ref={menuRef}>
+          {menuOpen && (
+            <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-border-warm bg-white py-1 shadow-lg">
               <button
                 type="button"
-                onClick={() => setMenuOpen((o) => !o)}
-                className="flex h-11 w-11 min-h-[44px] items-center justify-center rounded-lg border border-border-warm bg-white text-foreground transition-transform active:scale-[0.97]"
-                aria-expanded={menuOpen}
-                aria-haspopup="true"
+                onClick={() => {
+                  setRenameValue(ideaTitle);
+                  setRenameOpen(true);
+                  setMenuOpen(false);
+                }}
+                disabled={!savedIdeaId}
+                className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm disabled:opacity-50"
               >
-                ⋮
+                タイトルを変更
               </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-border-warm bg-white py-1 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRenameValue(ideaTitle);
-                      setRenameOpen(true);
-                      setMenuOpen(false);
-                    }}
-                    disabled={!savedIdeaId}
-                    className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm disabled:opacity-50"
-                  >
-                    タイトルを変更
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (savedIdeaId) router.push(`/ideas/${savedIdeaId}/validate`);
-                    }}
-                    disabled={!savedIdeaId}
-                    className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm disabled:opacity-50"
-                  >
-                    プロジェクトに昇格
-                  </button>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  if (savedIdeaId)
+                    router.push(`/ideas/${savedIdeaId}/validate`);
+                }}
+                disabled={!savedIdeaId}
+                className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm disabled:opacity-50"
+              >
+                プロジェクトに昇格
+              </button>
             </div>
-          </div>
+          )}
         </div>
-      </header>
+      </ChatHeader>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-4">
         <div className="shrink-0 mb-4 text-center">
@@ -327,11 +313,19 @@ export default function NewIdeaPage() {
           </div>
         )}
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
+        <ChatScrollArea
+          ref={scrollContainerRef}
+          showScrollToBottom={showScrollToBottom}
+          onScrollToBottom={scrollToBottom}
+        >
           {chatHistory.map((msg, idx) => (
             <div
               key={idx}
-              ref={idx === chatHistory.length - 1 && msg.role === "agent" ? lastAgentMessageRef : undefined}
+              ref={
+                idx === chatHistory.length - 1 && msg.role === "agent"
+                  ? lastAgentMessageRef
+                  : undefined
+              }
             >
               {msg.role === "agent" ? (
                 <div className="flex flex-col gap-2">
@@ -372,42 +366,19 @@ export default function NewIdeaPage() {
           )}
 
           <div ref={messagesEndRef} />
-        </div>
+        </ChatScrollArea>
 
         {!isComplete && (
-          <div className="shrink-0 -mx-5 border-t border-border-warm bg-white px-5 pt-4 pb-4">
-            {chatHistory.length > 0 &&
-            chatHistory[chatHistory.length - 1].options ? (
-              <div className="text-center text-xs text-muted">
-                上から選択してください
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage(currentInput);
-                    }
-                  }}
-                  placeholder="メッセージを入力..."
-                  disabled={chatLoading}
-                  className="flex-1 rounded-xl border border-border-warm bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSendMessage(currentInput)}
-                  disabled={!currentInput.trim() || chatLoading}
-                  className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
-                >
-                  送信
-                </button>
-              </div>
-            )}
-          </div>
+          <ChatFooter
+            value={currentInput}
+            onChange={setCurrentInput}
+            onSend={() => handleSendMessage(currentInput)}
+            disabled={chatLoading}
+            showOptionsHint={
+              chatHistory.length > 0 &&
+              !!chatHistory[chatHistory.length - 1].options
+            }
+          />
         )}
 
         {isComplete && (
