@@ -76,6 +76,12 @@ test.describe('New idea and other routes (unauthenticated)', () => {
 
     await expect(page).toHaveURL(/\/sign-in/);
   });
+
+  test('redirects to sign-in when visiting discovery', async ({ page }) => {
+    await page.goto('/discovery');
+
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
 });
 
 test.describe('Authenticated flows (require E2E credentials)', () => {
@@ -88,15 +94,7 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
     await expect(page.getByPlaceholder('パスワード')).toBeVisible({ timeout: 5000 });
     await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /ログイン/ }).click();
-    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-    const url = new URL(page.url());
-    if (url.pathname === '/discovery') {
-      await page.context().addCookies([
-        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-      ]);
-      await page.goto('/');
-    }
-    await expect(page).toHaveURL(/\/(\?|$)/);
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
     await expect(
       page.getByText(/ようこそ|アイデアを追加する|アイデア|家族の活動|まだアクティビティはありません/).first()
     ).toBeVisible({ timeout: 5000 });
@@ -108,14 +106,7 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
     await page.getByRole('button', { name: /次へ/ }).click();
     await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /ログイン/ }).click();
-    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-    const url = new URL(page.url());
-    if (url.pathname === '/discovery') {
-      await page.context().addCookies([
-        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-      ]);
-      await page.goto('/');
-    }
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
     await page.goto('/ideas');
     await expect(page).toHaveURL(/\/ideas/);
     await page.getByRole('link', { name: /＋/ }).click();
@@ -135,14 +126,7 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
     await page.getByRole('button', { name: /次へ/ }).click();
     await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /ログイン/ }).click();
-    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-    const url = new URL(page.url());
-    if (url.pathname === '/discovery') {
-      await page.context().addCookies([
-        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-      ]);
-      await page.goto('/');
-    }
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
     await page.goto('/ideas/new');
     await expect(page.getByText(/メッセージを入力|準備しています|アイデアを育てる/)).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(2000);
@@ -210,14 +194,7 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
     await page.getByRole('button', { name: /次へ/ }).click();
     await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /ログイン/ }).click();
-    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-    const url = new URL(page.url());
-    if (url.pathname === '/discovery') {
-      await page.context().addCookies([
-        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-      ]);
-      await page.goto('/');
-    }
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
     await page.goto('/ideas');
     await expect(page).toHaveURL(/\/ideas/);
     const emptyState = page.getByText('まだアイデアがありません');
@@ -234,19 +211,25 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
     await expect(page.getByText(/プロジェクトに昇格する前に|プロジェクトを作成する|AIがチェックしています/)).toBeVisible({ timeout: 10000 });
   });
 
+  test('visiting /discovery when authenticated redirects to /settings', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByRole('combobox').selectOption(process.env.E2E_MEMBER_ID ?? { index: 1 });
+    await page.getByRole('button', { name: /次へ/ }).click();
+    await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
+    await page.getByRole('button', { name: /ログイン/ }).click();
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
+    await page.goto('/discovery');
+    await expect(page).toHaveURL(/\/settings/);
+    await expect(page.getByRole('heading', { name: '設定' })).toBeVisible();
+  });
+
   test('authenticated user can open projects list', async ({ page }) => {
     await page.goto('/sign-in');
     await page.getByRole('combobox').selectOption(process.env.E2E_MEMBER_ID ?? { index: 1 });
     await page.getByRole('button', { name: /次へ/ }).click();
     await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /ログイン/ }).click();
-    await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-    const url = new URL(page.url());
-    if (url.pathname === '/discovery') {
-      await page.context().addCookies([
-        { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-      ]);
-    }
+    await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
     await page.goto('/projects');
     await expect(page).toHaveURL(/\/projects/);
     await expect(
@@ -272,15 +255,7 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
       await page.getByRole('button', { name: /次へ/ }).click();
       await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
       await page.getByRole('button', { name: /ログイン/ }).click();
-      await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
-      const url = new URL(page.url());
-      if (url.pathname === '/discovery') {
-        await context.addCookies([
-          { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
-        ]);
-        await page.goto('/');
-      }
-      await expect(page).toHaveURL(/\/(\?|$)/);
+      await expect(page).toHaveURL(/\/(\?|$)/, { timeout: 10000 });
       await page.evaluate(() => {
         localStorage.removeItem('pwa_install_prompt_shown');
         sessionStorage.setItem('show_pwa_install_prompt', '1');

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DiscoverySection } from "@/components/discovery/DiscoverySection";
 import { PwaInstallCard } from "@/components/settings/PwaInstallCard";
 import { PushPermissionPrompt } from "@/components/notifications/PushPermissionPrompt";
 
@@ -16,6 +17,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-col gap-4">
+        <DiscoverySection embedded />
         <PwaInstallCard />
         <PushPermissionPrompt variant="settings" />
       </div>

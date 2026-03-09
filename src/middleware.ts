@@ -5,7 +5,6 @@ import { isAdmin } from "@/lib/family-members";
 
 const isPublicRoute = (pathname: string) => /^\/sign-in(\/.*)?$/.test(pathname);
 const isAuthApiRoute = (pathname: string) => pathname.startsWith("/api/auth");
-const isDiscoveryRoute = (pathname: string) => pathname === "/discovery";
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -33,17 +32,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // POST /discovery: rewrite to API so clients that post to page path still work
-  if (pathname === "/discovery" && req.method === "POST") {
-    return NextResponse.rewrite(new URL("/api/discovery/complete", req.url));
-  }
-
-  // First-time gate: redirect to discovery if not completed
-  if (!isDiscoveryRoute(pathname)) {
-    const discoveryCompleted = req.cookies.get("discovery_completed")?.value;
-    if (!discoveryCompleted || discoveryCompleted !== "1") {
-      return NextResponse.redirect(new URL("/discovery", req.url));
-    }
+  // Discovery is optional and lives in Settings; old /discovery URL redirects there
+  if (pathname === "/discovery") {
+    return NextResponse.redirect(new URL("/settings", req.url));
   }
 
   return NextResponse.next();
