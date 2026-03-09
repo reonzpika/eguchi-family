@@ -253,4 +253,43 @@ test.describe('Authenticated flows (require E2E credentials)', () => {
       page.getByText(/プロジェクト|まだプロジェクトがありません|マイルストーン|内容/).first()
     ).toBeVisible({ timeout: 5000 });
   });
+
+  test('PWA install prompt appears 5s after landing on home with discovery flag', async ({
+    page,
+    context,
+  }) => {
+    test.setTimeout(20000);
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, 'userAgent', {
+        get: () =>
+          'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
+        configurable: true,
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 600 });
+    await page.goto('/sign-in');
+      await page.getByRole('combobox').selectOption(process.env.E2E_MEMBER_ID ?? { index: 1 });
+      await page.getByRole('button', { name: /次へ/ }).click();
+      await page.getByPlaceholder('パスワード').fill(process.env.E2E_PASSWORD!);
+      await page.getByRole('button', { name: /ログイン/ }).click();
+      await expect(page).toHaveURL(/\/(discovery|\?|$)/, { timeout: 10000 });
+      const url = new URL(page.url());
+      if (url.pathname === '/discovery') {
+        await context.addCookies([
+          { name: 'discovery_completed', value: '1', domain: url.hostname, path: '/' },
+        ]);
+        await page.goto('/');
+      }
+      await expect(page).toHaveURL(/\/(\?|$)/);
+      await page.evaluate(() => {
+        localStorage.removeItem('pwa_install_prompt_shown');
+        sessionStorage.setItem('show_pwa_install_prompt', '1');
+      });
+      await page.reload();
+      await expect(page).toHaveURL(/\/(\?|$)/);
+      await expect(page.getByRole('dialog', { name: /ホーム画面に追加/ })).toBeVisible({
+        timeout: 7000,
+      });
+    await expect(page.getByText(/いつでもすぐにアクセスできます/)).toBeVisible();
+  });
 });

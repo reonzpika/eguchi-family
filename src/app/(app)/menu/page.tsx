@@ -125,6 +125,19 @@ export default function MenuPage() {
           </div>
           <span className="text-muted">→</span>
         </button>
+
+        <button
+          onClick={() => router.push("/settings")}
+          className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
+        >
+          <div>
+            <div className="text-base font-bold text-foreground">
+              ⚙️ 設定
+            </div>
+            <div className="mt-1 text-xs text-muted">ホーム画面に追加、通知</div>
+          </div>
+          <span className="text-muted">→</span>
+        </button>
       </div>
 
       {/* Family members section */}

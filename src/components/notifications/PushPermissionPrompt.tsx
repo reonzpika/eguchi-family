@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 
 const VAPID_PUBLIC_KEY = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY : null;
 
-export function PushPermissionPrompt() {
+interface PushPermissionPromptProps {
+  /** When "settings", always shows the card (including when granted). */
+  variant?: "default" | "settings";
+}
+
+export function PushPermissionPrompt({ variant = "default" }: PushPermissionPromptProps) {
   const [status, setStatus] = useState<"default" | "granted" | "denied" | "unsupported">("default");
   const [loading, setLoading] = useState(false);
   const [deniedBannerDismissed, setDeniedBannerDismissed] = useState(false);
@@ -65,11 +70,35 @@ export function PushPermissionPrompt() {
     }
   };
 
-  if (status === "granted" || status === "unsupported") return null;
+  if (status === "granted" && variant === "default") return null;
+  if (status === "unsupported" && variant === "default") return null;
+
+  if (status === "granted" && variant === "settings") {
+    return (
+      <div className="mb-4 rounded-2xl border border-border-warm bg-white p-4">
+        <p className="text-sm font-semibold text-foreground">🔔 通知の設定</p>
+        <p className="mt-1 text-xs text-muted">
+          金曜の振り返りリマインダーや、家族のマイルストーン達成をお知らせします。
+        </p>
+        <p className="mt-3 text-xs font-medium text-primary">通知は有効です</p>
+      </div>
+    );
+  }
+
+  if (status === "unsupported" && variant === "settings") {
+    return (
+      <div className="mb-4 rounded-2xl border border-border-warm bg-white p-4">
+        <p className="text-sm font-semibold text-foreground">🔔 通知の設定</p>
+        <p className="mt-1 text-xs text-muted">通知はこのブラウザではサポートされていません。</p>
+      </div>
+    );
+  }
 
   if (status === "denied" && !deniedBannerDismissed) {
     return (
-      <div className="mb-4 flex touch-manipulation items-center justify-between gap-2 rounded-xl border border-border-warm bg-white p-3">
+      <div
+        className={`mb-4 flex touch-manipulation items-center justify-between gap-2 border border-border-warm bg-white p-3 ${variant === "settings" ? "rounded-2xl p-4" : "rounded-xl"}`}
+      >
         <p className="text-xs text-muted">
           設定で通知を有効にすると、振り返りリマインダーなどを受け取れます。
         </p>
@@ -86,8 +115,12 @@ export function PushPermissionPrompt() {
   }
 
   return (
-    <div className="relative z-10 mb-4 rounded-xl border border-border-warm bg-white p-4">
-      <p className="text-sm font-semibold text-foreground">🔔 通知を受け取る</p>
+    <div
+      className={`relative z-10 mb-4 border border-border-warm bg-white p-4 ${variant === "settings" ? "rounded-2xl" : "rounded-xl"}`}
+    >
+      <p className="text-sm font-semibold text-foreground">
+        {variant === "settings" ? "🔔 通知の設定" : "🔔 通知を受け取る"}
+      </p>
       <p className="mt-1 text-xs text-muted">
         金曜の振り返りリマインダーや、家族のマイルストーン達成をお知らせします。
       </p>
