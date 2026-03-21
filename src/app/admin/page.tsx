@@ -79,6 +79,21 @@ export default async function AdminDashboard() {
       {/* Navigation links */}
       <div className="flex flex-col gap-3">
         <Link
+          href="/admin/hub"
+          className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
+        >
+          <div>
+            <div className="text-base font-bold text-foreground">
+              🎯 ファミリーハブ・ミッション
+            </div>
+            <div className="mt-1 text-xs text-muted">
+              AIツール向けミッションを追加
+            </div>
+          </div>
+          <span className="text-muted">→</span>
+        </Link>
+
+        <Link
           href="/admin/members"
           className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
         >

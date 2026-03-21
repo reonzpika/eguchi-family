@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#67eaef",
+              "tertiary-dim": "#724b00",
+              "inverse-on-surface": "#9c9d9d",
+              "on-error": "#fff7f6",
+              "on-tertiary-fixed-variant": "#634000",
+              "surface-container-high": "#e6e8e9",
+              "on-secondary-fixed-variant": "#00686b",
+              "surface-dim": "#d7dbdb",
+              "surface-container-highest": "#e0e3e4",
+              "tertiary": "#825600",
+              "outline": "#777b7c",
+              "on-tertiary-fixed": "#3c2500",
+              "inverse-primary": "#96f46e",
+              "surface-container": "#eceeee",
+              "on-primary": "#ecffdc",
+              "primary-dim": "#1f6000",
+              "on-primary-fixed": "#144500",
+              "on-secondary": "#e2feff",
+              "secondary-fixed": "#77f9fe",
+              "on-secondary-container": "#005d60",
+              "on-surface": "#2f3334",
+              "background": "#f9f9f9",
+              "on-background": "#2f3334",
+              "surface-bright": "#f9f9f9",
+              "primary-container": "#96f46e",
+              "primary-fixed": "#96f46e",
+              "secondary-dim": "#005d60",
+              "primary": "#246e00",
+              "error": "#aa371c",
+              "secondary-container": "#77f9fe",
+              "tertiary-fixed": "#f9b854",
+              "surface-container-lowest": "#ffffff",
+              "inverse-surface": "#0c0f0f",
+              "on-tertiary-container": "#573800",
+              "tertiary-container": "#f9b854",
+              "on-secondary-fixed": "#00494b",
+              "surface-container-low": "#f3f4f4",
+              "on-surface-variant": "#5c6060",
+              "surface-variant": "#e0e3e4",
+              "error-dim": "#821a01",
+              "outline-variant": "#afb2b3",
+              "on-primary-fixed-variant": "#216500",
+              "tertiary-fixed-dim": "#eaaa48",
+              "surface": "#f9f9f9",
+              "on-error-container": "#671200"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans", "Noto Sans JP"],
+              "body": ["Be Vietnam Pro", "Noto Sans JP"],
+              "label": ["Be Vietnam Pro", "Noto Sans JP"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+        }
+        .editorial-shadow {
+            box-shadow: 0px 12px 32px rgba(47, 51, 52, 0.06);
+        }
+        body {
+            font-family: 'Be Vietnam Pro', 'Noto Sans JP', sans-serif;
+            background-color: #f9f9f9;
+            color: #2f3334;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #246e00;
+            box-shadow: 0 0 0 2px rgba(36, 110, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-8 h-16 bg-[#f9f9f9] dark:bg-gray-900 shadow-none">
+<div class="flex items-center gap-4">
+<button class="text-[#246e00] dark:text-[#96f46e] hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold text-lg text-[#246e00] dark:text-[#96f46e] tracking-tight">AI Masterclass</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img alt="Admin" class="w-full h-full object-cover" data-alt="Family profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFBfr9vsKtjFxPkk4Jla5rnXmqAq9Fr_OCu9nbLbDNZHPk7qPfb7251DLkglZO6JScB_R9BCIKCosk3AbGjj2hH3dEcaxjlfLSzTo3qkjsipK3RHKGYS-T_5CBGrOT92z4UhaVO7xBWDY2MFFUyykBVguTWTI9r6jYK4QvUieues5ucgn6UDTWWkYOksWkqDItFxv4Ol0HUpGZR618FAxQuaOxmhH4A6PZMlrAZtdYH5ro6sNdDiFOMFqZQF9dRFTFplA6ZUbh7po"/>
+</div>
+</div>
+</header>
+<main class="pt-24 px-8 max-w-5xl mx-auto">
+<!-- Breadcrumb & Header -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant text-sm mb-2">
+<span class="hover:underline cursor-pointer">Admin</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="hover:underline cursor-pointer">Tools</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-medium">Add New Tool</span>
+</nav>
+<h2 class="font-headline font-extrabold text-4xl text-on-surface leading-tight">下書きを<span class="text-primary">編集中</span></h2>
+<p class="text-on-surface-variant mt-2 max-w-lg">AIが生成した内容を修正しています。内容を確認し、必要に応じて変更を保存してください。</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-background bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xs" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">AI生成内容を編集</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Tool Identity Card -->
+<div class="md:col-span-4 bg-surface-container-lowest editorial-shadow rounded-xl p-8 relative overflow-hidden flex flex-col items-center justify-center text-center ring-2 ring-primary/20">
+<div class="absolute top-0 right-0 p-4">
+<button class="flex items-center gap-1 text-primary hover:opacity-70 transition-opacity">
+<span class="text-xs font-bold">完了</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">check</span>
+</button>
+</div>
+<div class="w-24 h-24 bg-surface-container rounded-lg flex items-center justify-center mb-6 overflow-hidden">
+<img alt="Claude Logo" class="w-full h-full object-cover" data-alt="Minimalist technology brand logo representation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArKshjkqA2no-439Xz_xOkTsC3w8fbA1KLZLXA2ohWcqqcwxfy64zkhk4y54R4Ar0dJMAxd8BmbVuw_CnTR0gOi-pQfPVh9KrskEC5lSozl0Q7zo0BrLNLwilufEcaH6XluH4WCByPeCNGSJ4k7NANQQxjItY3C52LrbLMfGl2E5qcUX9qTt8pbzg5NpEL78emYOJ7PDUXJbWGBibOEwLPp3pe2YDWmyovqbyDVFaCpLJBk4oRfJ6WYepMZUyiJrp8jTpERT8AqfY"/>
+</div>
+<input class="w-full text-center font-headline font-bold text-2xl text-on-surface mb-1 bg-surface-container-low border-none rounded-lg p-1 focus:ring-0" type="text" value="Claude"/>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full uppercase tracking-tighter cursor-pointer hover:opacity-80">大規模言語モデル</span>
+<div class="mt-8 w-full border-t border-outline-variant/10 pt-6">
+<div class="flex justify-between text-sm mb-3">
+<span class="text-on-surface-variant">参照URL</span>
+<span class="text-primary font-medium">anthropic.com</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">使用モデル</span>
+<span class="text-on-surface font-medium">3.5 Sonnet</span>
+</div>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="md:col-span-8 bg-surface-container-lowest editorial-shadow rounded-xl p-8 relative ring-2 ring-primary/20">
+<div class="absolute top-0 right-0 p-4">
+<button class="flex items-center gap-1 text-primary hover:opacity-70 transition-opacity">
+<span class="text-xs font-bold">編集を完了</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">check_circle</span>
+</button>
+</div>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-primary-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">description</span>
+</div>
+<h4 class="font-headline font-bold text-lg">概要</h4>
+</div>
+<textarea class="w-full bg-surface-container-low border-none rounded-xl p-4 text-on-surface leading-relaxed text-lg font-medium resize-none focus:ring-1 focus:ring-primary/30" rows="2">精緻なテキスト生成やコーディング支援を得意とします。</textarea>
+<div class="mt-6 bg-surface-container-low rounded-lg p-6 relative">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary mt-1" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<div class="w-full">
+<textarea class="w-full bg-transparent border-none p-0 text-sm text-on-surface leading-relaxed italic resize-none focus:ring-0" rows="2">"より人間らしい自然な語り口と、複雑な論理への安全性に定評があります。"</textarea>
+</div>
+</div>
+</div>
+</div>
+<!-- Pro/Con Bento Items -->
+<div class="md:col-span-6 bg-surface-container-lowest editorial-shadow rounded-xl p-8 border-l-8 border-primary relative ring-2 ring-primary/10">
+<div class="absolute top-4 right-4">
+<button class="material-symbols-outlined text-primary" style="font-variation-settings: 'wght' 600;">check</button>
+</div>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<h4 class="font-headline font-bold text-lg">得意なこと</h4>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 bg-surface-container-low p-2 px-4 rounded-lg group">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<input class="flex-1 bg-transparent border-none p-0 text-on-surface font-medium focus:ring-0" placeholder="テキストを入力..." type="text" value="長文ドキュメント"/>
+<span class="material-symbols-outlined text-outline-variant text-sm opacity-0 group-hover:opacity-100 cursor-pointer">close</span>
+</li>
+<li class="flex items-center gap-3 bg-surface-container-low p-2 px-4 rounded-lg group">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<input class="flex-1 bg-transparent border-none p-0 text-on-surface font-medium focus:ring-0" placeholder="テキストを入力..." type="text" value="クリエイティブな執筆"/>
+<span class="material-symbols-outlined text-outline-variant text-sm opacity-0 group-hover:opacity-100 cursor-pointer">close</span>
+</li>
+<li class="flex items-center gap-3 border-2 border-dashed border-outline-variant/30 p-2 px-4 rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline-variant text-sm">add</span>
+<span class="text-on-surface-variant text-sm font-medium">項目を追加</span>
+</li>
+</ul>
+</div>
+<div class="md:col-span-6 bg-surface-container-lowest editorial-shadow rounded-xl p-8 border-l-8 border-error relative ring-2 ring-primary/10">
+<div class="absolute top-4 right-4">
+<button class="material-symbols-outlined text-primary" style="font-variation-settings: 'wght' 600;">check</button>
+</div>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-error">cancel</span>
+<h4 class="font-headline font-bold text-lg">苦手なこと</h4>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 bg-surface-container-low p-2 px-4 rounded-lg group">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<input class="flex-1 bg-transparent border-none p-0 text-on-surface font-medium focus:ring-0" placeholder="テキストを入力..." type="text" value="リアルタイムのニュース"/>
+<span class="material-symbols-outlined text-outline-variant text-sm opacity-0 group-hover:opacity-100 cursor-pointer">close</span>
+</li>
+<li class="flex items-center gap-3 bg-surface-container-low p-2 px-4 rounded-lg group">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<input class="flex-1 bg-transparent border-none p-0 text-on-surface font-medium focus:ring-0" placeholder="テキストを入力..." type="text" value="画像生成"/>
+<span class="material-symbols-outlined text-outline-variant text-sm opacity-0 group-hover:opacity-100 cursor-pointer">close</span>
+</li>
+<li class="flex items-center gap-3 border-2 border-dashed border-outline-variant/30 p-2 px-4 rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline-variant text-sm">add</span>
+<span class="text-on-surface-variant text-sm font-medium">項目を追加</span>
+</li>
+</ul>
+</div>
+<!-- Safety Note (Wide) -->
+<div class="md:col-span-12 bg-tertiary-container/20 rounded-xl p-8 border-2 border-dashed border-tertiary/30">
+<div class="flex flex-col md:flex-row items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-tertiary-fixed text-3xl" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline font-bold text-lg text-on-tertiary-container mb-1">安全のための注意</h4>
+<input class="w-full bg-transparent border-none p-0 text-on-tertiary-container text-xl font-bold leading-tight focus:ring-0" type="text" value="重要な情報は必ず確認しましょう。"/>
+<textarea class="w-full bg-transparent border-none p-0 text-on-tertiary-container/70 text-sm mt-1 italic resize-none focus:ring-0" rows="2">AIは間違った情報を生成することがあります。重要な情報は必ず一次情報で確認してください。</textarea>
+</div>
+<button class="bg-tertiary-container hover:bg-tertiary-fixed text-on-tertiary-container px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">check</span>
+                        編集を完了
+                    </button>
+</div>
+</div>
+</div>
+<!-- Action Bar (Floating at bottom) -->
+<div class="fixed bottom-0 left-0 w-full z-40 bg-white/80 backdrop-blur-lg px-8 py-6 flex flex-col md:flex-row items-center justify-center gap-6 shadow-[0px_-12px_32px_rgba(47,51,52,0.06)]">
+<div class="flex items-center gap-4 w-full max-w-5xl justify-between">
+<div class="hidden md:block">
+<button class="text-on-surface-variant font-medium hover:text-on-surface transition-colors flex items-center gap-2 active:scale-95">
+<span class="material-symbols-outlined">refresh</span>
+                        元に戻す
+                    </button>
+</div>
+<div class="flex flex-1 md:flex-none items-center gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none bg-surface-container-high text-on-primary-fixed px-8 py-4 rounded-xl font-bold transition-all active:scale-[0.98] hover:opacity-90">
+                        編集内容を保存
+                    </button>
+<button class="flex-1 md:flex-none bg-gradient-to-br from-[#246e00] to-[#96f46e]/80 text-on-primary px-10 py-4 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98] hover:opacity-95">
+                        内容を確定して公開
+                    </button>
+</div>
+<div class="md:hidden">
+<button class="text-on-surface-variant font-medium text-sm">
+                        元に戻す
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Drawer (Off-screen simulated) -->
+<aside class="hidden fixed left-0 top-0 h-full w-80 bg-[#f9f9f9] dark:bg-gray-900 shadow-2xl z-[60] rounded-r-[3rem] p-6">
+<div class="mb-10 left_align">
+<div class="w-16 h-16 rounded-full bg-surface-container mb-4 overflow-hidden">
+<img alt="Family Portrait" class="w-full h-full object-cover" data-alt="Family Portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPYp5hHP94poAD6KcvtXb0gVfGUZGa-oQwfkEwYi74ORHLhJImesSTKM5uTvV_TWtD5sWPiJb5V3li8_IxAdEqp2p1EiFoIY4PBzAb8vTEm7SvbYCJE76qIjQGGVo6B_zUjc_gLIH8PsTyTepKP9N_9eD6Qx1dvPDknl8X-oo2Aci5GWLiTQZSpCNofTQd_vEF_gbNA_oj2fAxsmyPrY3uqtVDFte85datswEtSe89tTGFjKkasx4Y3PQxuTCON5JShJvFj-64Hkk"/>
+</div>
+<h4 class="text-[#246e00] font-bold font-['Plus_Jakarta_Sans'] text-base">The Henderson Family</h4>
+<p class="text-[#2f3334] dark:text-gray-300 text-xs">Level 12 Explorers</p>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-4 p-4 text-[#2f3334] dark:text-gray-300 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>Daily Challenges</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-[#2f3334] dark:text-gray-300 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span>Family Library</span>
+</a>
+<a class="flex items-center gap-4 p-4 bg-[#96f46e]/20 text-[#246e00] font-bold rounded-xl" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span>AI Safety Guide</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-[#2f3334] dark:text-gray-300 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+</body></html>

@@ -90,11 +90,14 @@ export function IdeaCard({
 
   const content = (
     <>
-      <div className="mb-2 font-bold text-foreground">💡 {idea.title}</div>
-      <p className="mb-2 text-xs leading-relaxed text-muted">
+      <div className="mb-2 flex items-start gap-2 font-bold text-on-surface">
+        <span className="material-symbols-outlined shrink-0 text-primary text-xl">lightbulb</span>
+        <span>{idea.title}</span>
+      </div>
+      <p className="mb-2 text-xs leading-relaxed text-on-surface-variant">
         {truncate(idea.polished_content, 60)}
       </p>
-      <div className="text-xs text-muted">保存日: {formatDate(idea.updated_at)}</div>
+      <div className="text-xs text-on-surface-variant">保存日: {formatDate(idea.updated_at)}</div>
     </>
   );
 
@@ -102,7 +105,7 @@ export function IdeaCard({
     <div
       ref={menuRef}
       role="menu"
-      className="min-w-[180px] rounded-xl border border-border-warm bg-white py-1 shadow-lg"
+      className="min-w-[180px] rounded-xl border border-outline-variant/30 bg-surface-container-lowest py-1 shadow-lg"
       style={{
         position: "fixed",
         zIndex: 50,
@@ -119,7 +122,7 @@ export function IdeaCard({
             setMenuOpen(false);
             onRename(idea);
           }}
-          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
+          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-on-surface hover:bg-surface-container-low"
         >
           タイトルを変更
         </button>
@@ -132,7 +135,7 @@ export function IdeaCard({
             setMenuOpen(false);
             onMoveToProject(idea);
           }}
-          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-foreground hover:bg-bg-warm"
+          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-on-surface hover:bg-surface-container-low"
         >
           プロジェクトに昇格
         </Link>
@@ -147,7 +150,7 @@ export function IdeaCard({
             setMenuOpen(false);
             onDelete(idea);
           }}
-          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-red-600 hover:bg-bg-warm"
+          className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-error hover:bg-surface-container-low"
         >
           削除
         </button>
@@ -160,7 +163,7 @@ export function IdeaCard({
       <>
         <div
           ref={cardRef}
-          className="relative flex w-full items-start gap-1 rounded-2xl border border-border-warm bg-white transition-transform active:scale-[0.98]"
+          className="editorial-shadow relative flex w-full items-start gap-1 rounded-2xl bg-surface-container-lowest transition-transform active:scale-[0.98]"
         >
           <Link
             data-testid="idea-card-link"
@@ -180,9 +183,9 @@ export function IdeaCard({
             aria-expanded={menuOpen}
             aria-haspopup="true"
             aria-label="メニューを開く"
-            className="flex h-10 w-10 min-h-[44px] shrink-0 items-center justify-center rounded-lg text-muted hover:bg-bg-warm hover:text-foreground"
+            className="flex h-10 w-10 min-h-[44px] shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
           >
-            ⋮
+            <span className="material-symbols-outlined text-xl">more_vert</span>
           </button>
         </div>
         {menuOpen &&
@@ -203,7 +206,7 @@ export function IdeaCard({
     );
   }
 
-  const cardClassName = `w-full rounded-2xl border border-border-warm bg-white ${cardPadding} ${cardContentBase} transition-transform active:scale-[0.98]`;
+  const cardClassName = `editorial-shadow w-full rounded-2xl bg-surface-container-lowest ${cardPadding} ${cardContentBase} transition-transform active:scale-[0.98]`;
 
   if (href) {
     return (

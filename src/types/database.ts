@@ -105,7 +105,10 @@ export type NotificationType =
   | "comment_on_project"
   | "comment_mention"
   | "family_milestone"
-  | "inactive_nudge";
+  | "inactive_nudge"
+  | "hub_new_tool"
+  | "hub_new_mission"
+  | "hub_thread_reply";
 
 export type NotificationPriority = "high" | "medium" | "low";
 

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#246e00",
+              "on-secondary-fixed-variant": "#00686b",
+              "on-tertiary-fixed-variant": "#634000",
+              "surface-bright": "#f9f9f9",
+              "tertiary-container": "#f9b854",
+              "surface-variant": "#e0e3e4",
+              "secondary-dim": "#005d60",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#eceeee",
+              "primary-fixed": "#96f46e",
+              "surface-tint": "#246e00",
+              "surface-container-low": "#f3f4f4",
+              "error-dim": "#821a01",
+              "on-secondary-fixed": "#00494b",
+              "tertiary-fixed": "#f9b854",
+              "surface-dim": "#d7dbdb",
+              "primary-container": "#96f46e",
+              "tertiary-dim": "#724b00",
+              "surface": "#f9f9f9",
+              "primary-fixed-dim": "#89e561",
+              "outline": "#777b7c",
+              "inverse-on-surface": "#9c9d9d",
+              "secondary-fixed-dim": "#67eaef",
+              "tertiary-fixed-dim": "#eaaa48",
+              "secondary": "#006a6d",
+              "on-secondary": "#e2feff",
+              "on-primary-fixed-variant": "#216500",
+              "on-secondary-container": "#005d60",
+              "on-tertiary": "#fff8f2",
+              "surface-container-highest": "#e0e3e4",
+              "primary-dim": "#1f6000",
+              "on-background": "#2f3334",
+              "on-surface": "#2f3334",
+              "on-surface-variant": "#5c6060",
+              "on-primary-fixed": "#144500",
+              "outline-variant": "#afb2b3",
+              "on-tertiary-fixed": "#3c2500",
+              "inverse-surface": "#0c0f0f",
+              "on-primary-container": "#1c5b00",
+              "error": "#aa371c",
+              "inverse-primary": "#96f46e",
+              "on-error-container": "#671200",
+              "background": "#f9f9f9",
+              "surface-container-high": "#e6e8e9",
+              "secondary-fixed": "#77f9fe",
+              "on-tertiary-container": "#573800",
+              "on-error": "#fff7f6",
+              "error-container": "#fa7150",
+              "tertiary": "#825600",
+              "secondary-container": "#77f9fe",
+              "on-primary": "#ecffdc"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans", "Noto Sans JP"],
+              "body": ["Be Vietnam Pro", "Noto Sans JP"],
+              "label": ["Be Vietnam Pro", "Noto Sans JP"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #246e00 0%, #96f46e 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-8 py-4 w-full rounded-b-[2rem] sticky top-0 no-border bg-white/80 backdrop-blur-lg shadow-[0px_4px_20px_rgba(47,51,52,0.04)] z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#246e00]" data-icon="bubble_chart">bubble_chart</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-2xl text-[#246e00]">AI Masterclass</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img alt="Family Member Profile" data-alt="User avatar placeholder in a circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1NMdiN3m01e5qy_Zt5QAW8AX16cbstRL11vQ4TRWf57ttzChstAs67qP5xapE-4ozwrCFTSrMWkVQSfju38pYnaxjfMrPxSggAMqxJdjnf7F_KZ3ChweOEYVSFAOstkcgvZ-5glnYw4uCn-J9rXY6KSiVL2jp1jA-sB5IIdgbFojJOJUjAj75x0mnVXRydDKzLOF1xCxQWjiemO2hcWU3xVW7o-EbCD_WgkBq589cEoXJErbeF1__ppUIBlkEXaFTRIND1vomeE4"/>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-8 pt-10 space-y-20">
+<!-- Home Screen Empty State Section -->
+<section class="relative">
+<div class="flex flex-col items-center text-center space-y-8 py-12">
+<div class="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center">
+<!-- Warm Illustration Placeholder -->
+<div class="absolute inset-0 opacity-20 primary-gradient"></div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-8xl text-primary/40 mb-4" data-icon="nest_eco_leaf">nest_eco_leaf</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-tertiary/30 text-4xl" data-icon="star">star</span>
+<span class="material-symbols-outlined text-secondary/30 text-5xl" data-icon="favorite">favorite</span>
+</div>
+</div>
+<img alt="Warm illustration" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-40" data-alt="Soft warm sunrise over a peaceful garden landscape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZY4DOh_pXPjNKBbRcwvq4D49gGXJllqNTiDeZLWyyFYzgnSf5GK0lmOQQJvC7jQ9toVKBKJW26t4flxOsQXEh_gCqUFiTGFMTQlsR93Y1aMblBbxyvvoCJTp2rtYGZfdVUi7crXmGpRYTqQZGfcOjuz3_lLRDOx7aJIsn15Z9SmMb4xKV0vpwQD4E13JRIri0L2kxzRchX7RRWrl0Ij8KOlFTp4OfnFoyUielkm6uUJlcDUdbiQ2K0ucvFKnOe8ykUpVizIrbN1E"/>
+</div>
+<div class="space-y-4 max-w-lg">
+<h2 class="text-3xl font-headline font-extrabold tracking-tight text-on-surface">
+                        はじまりを待っています
+                    </h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                        まだミッションがありません。管理者が新しいミッションを作成するとここに表示されます。
+                    </p>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface-container-lowest px-6 py-3 rounded-full shadow-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<span class="text-sm font-medium">ミッションは自動的に更新されます</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Divider with spacing only -->
+<div class="h-12"></div>
+<!-- Tool Library Empty State Section -->
+<section>
+<div class="bg-surface-container-low rounded-xl p-12 flex flex-col items-center text-center space-y-8 relative overflow-hidden">
+<!-- Decorative Elements -->
+<div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-secondary-container/20 blur-3xl"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-tertiary-container/20 blur-3xl"></div>
+<div class="w-24 h-24 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-5xl text-outline-variant" data-icon="handyman">handyman</span>
+</div>
+<div class="space-y-3 z-10">
+<h2 class="text-2xl font-headline font-bold text-on-surface">ツールボックスは空っぽです</h2>
+<p class="text-on-surface-variant max-w-sm">
+                        ツールがまだ登録されていません。まずは最初のツールを追加してみましょう！
+                    </p>
+</div>
+<!-- Call to Action for Admin -->
+<button class="primary-gradient text-on-primary px-10 py-4 rounded-full font-bold flex items-center gap-3 shadow-lg active:scale-95 transition-transform duration-200 z-10">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                    ツールを新規作成する
+                </button>
+<!-- Guidance Cards Bento-ish Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-8">
+<div class="glass-card p-6 rounded-lg text-left flex items-start gap-4 border border-white/50">
+<div class="p-3 rounded-full bg-secondary-container/30 text-secondary">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+</div>
+<div>
+<p class="font-bold text-sm">使い方のヒント</p>
+<p class="text-xs text-on-surface-variant">ツールを追加して学びを加速させましょう</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-lg text-left flex items-start gap-4 border border-white/50">
+<div class="p-3 rounded-full bg-tertiary-container/30 text-tertiary">
+<span class="material-symbols-outlined" data-icon="help_center">help_center</span>
+</div>
+<div>
+<p class="font-bold text-sm">サポートが必要ですか？</p>
+<p class="text-xs text-on-surface-variant">ガイドラインを確認して始めましょう</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 flex justify-around items-center px-6 pb-8 pt-4 backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 rounded-t-[3rem] z-50 shadow-[0px_-8px_32px_rgba(47,51,52,0.06)]">
+<a class="flex flex-col items-center justify-center bg-[#96f46e]/30 text-[#246e00] rounded-full px-6 py-2 transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-xs font-semibold">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 px-6 py-2 hover:text-[#246e00] transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-['Be_Vietnam_Pro'] text-xs font-semibold">Missions</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 px-6 py-2 hover:text-[#246e00] transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="handyman">handyman</span>
+<span class="font-['Be_Vietnam_Pro'] text-xs font-semibold">Tools</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 px-6 py-2 hover:text-[#246e00] transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Be_Vietnam_Pro'] text-xs font-semibold">Settings</span>
+</a>
+</nav>
+</body></html>

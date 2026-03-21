@@ -1,30 +1,66 @@
 @import "tailwindcss";
 
+/* Digital Engawa design tokens (see docs/stitch/kazoku_harmony/DESIGN.md) */
 :root {
-  --background: #ffffff;
-  --foreground: #2D2D2D;
+  --background: #f9f9f9;
+  --foreground: #2f3334;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-jp);
-  
-  /* Custom design tokens */
-  --color-primary: #F97B6B;
-  --color-primary-light: #FDECEA;
-  --color-secondary: #F9C784;
-  --color-bg-warm: #FFFAF5;
-  --color-muted: #9E9E9E;
-  --color-success: #7CC9A0;
-  --color-success-light: #EBF7F2;
-  --color-border-warm: #F0E8DF;
+  --color-background: #f9f9f9;
+  --color-foreground: #2f3334;
+  --color-on-surface: #2f3334;
+  --font-sans: var(--font-be-vietnam), var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
+  --font-headline: var(--font-plus-jakarta), var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
+
+  /* Engawa palette */
+  --color-primary: #246e00;
+  --color-primary-dim: #1f6000;
+  --color-primary-container: #96f46e;
+  --color-primary-fixed: #96f46e;
+  --color-on-primary: #ecffdc;
+  --color-on-primary-container: #1c5b00;
+  --color-secondary: #006a6d;
+  --color-secondary-container: #77f9fe;
+  --color-on-secondary: #e2feff;
+  --color-on-secondary-container: #005d60;
+  --color-tertiary: #825600;
+  --color-tertiary-container: #f9b854;
+  --color-on-tertiary: #fff8f2;
+  --color-on-tertiary-container: #573800;
+  --color-surface: #f9f9f9;
+  --color-surface-container: #eceeee;
+  --color-surface-container-low: #f3f4f4;
+  --color-surface-container-high: #e6e8e9;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface-variant: #5c6060;
+  --color-outline: #777b7c;
+  --color-outline-variant: #afb2b3;
+  --color-error: #aa371c;
+  --color-error-container: #fa7150;
+
+  /* Legacy aliases (coral era) mapped to Engawa */
+  --color-primary-light: #e8f5e0;
+  --color-secondary-legacy: #77f9fe;
+  --color-bg-warm: #f9f9f9;
+  --color-border-warm: #e0e3e4;
+  --color-muted: #5c6060;
+  --color-success: #246e00;
+  --color-success-light: #e8f5e0;
 }
 
 body {
-  background: var(--color-bg-warm);
-  color: var(--foreground);
-  font-family: var(--font-noto-sans-jp), sans-serif;
+  background: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+}
+
+.editorial-shadow {
+  box-shadow: 0px 12px 32px rgba(47, 51, 52, 0.06);
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #246e00 0%, #96f46e 100%);
 }
 
 /* Hide scrollbar while keeping scroll behaviour (touch, wheel, keyboard). */
@@ -41,4 +77,9 @@ body {
 /* Safe area for notched devices (e.g. iPhone). */
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Material Symbols alignment */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }

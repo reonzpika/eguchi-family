@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#67eaef",
+              "tertiary-dim": "#724b00",
+              "inverse-on-surface": "#9c9d9d",
+              "on-error": "#fff7f6",
+              "on-tertiary-fixed-variant": "#634000",
+              "surface-container-high": "#e6e8e9",
+              "on-secondary-fixed-variant": "#00686b",
+              "surface-dim": "#d7dbdb",
+              "surface-container-highest": "#e0e3e4",
+              "tertiary": "#825600",
+              "outline": "#777b7c",
+              "on-tertiary-fixed": "#3c2500",
+              "inverse-primary": "#96f46e",
+              "surface-container": "#eceeee",
+              "on-primary": "#ecffdc",
+              "primary-dim": "#1f6000",
+              "on-primary-fixed": "#144500",
+              "on-secondary": "#e2feff",
+              "secondary-fixed": "#77f9fe",
+              "on-secondary-container": "#005d60",
+              "on-surface": "#2f3334",
+              "background": "#f9f9f9",
+              "on-tertiary": "#fff8f2",
+              "on-primary-container": "#1c5b00",
+              "primary-fixed-dim": "#89e561",
+              "error-container": "#fa7150",
+              "secondary": "#006a6d",
+              "surface-tint": "#246e00",
+              "on-background": "#2f3334",
+              "surface-bright": "#f9f9f9",
+              "primary-container": "#96f46e",
+              "primary-fixed": "#96f46e",
+              "secondary-dim": "#005d60",
+              "primary": "#246e00",
+              "error": "#aa371c",
+              "secondary-container": "#77f9fe",
+              "tertiary-fixed": "#f9b854",
+              "surface-container-lowest": "#ffffff",
+              "inverse-surface": "#0c0f0f",
+              "on-tertiary-container": "#573800",
+              "tertiary-container": "#f9b854",
+              "on-secondary-fixed": "#00494b",
+              "surface-container-low": "#f3f4f4",
+              "on-surface-variant": "#5c6060",
+              "surface-variant": "#e0e3e4",
+              "error-dim": "#821a01",
+              "outline-variant": "#afb2b3",
+              "on-primary-fixed-variant": "#216500",
+              "tertiary-fixed-dim": "#eaaa48",
+              "surface": "#f9f9f9",
+              "on-error-container": "#671200"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans", "Noto Sans JP"],
+              "body": ["Be Vietnam Pro", "Noto Sans JP"],
+              "label": ["Be Vietnam Pro", "Noto Sans JP"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Be Vietnam Pro', 'Noto Sans JP', sans-serif;
+        background-color: #f9f9f9;
+        color: #2f3334;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(16px);
+      }
+      .primary-gradient {
+        background: linear-gradient(135deg, #246e00 0%, #96f46e 100%);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- Top Navigation Anchor (Manual suppression applied: Contextual Detail Screen) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-8 h-16 bg-[#f9f9f9] dark:bg-gray-900 shadow-none">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center w-10 h-10 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-[#2f3334]">arrow_back</span>
+</button>
+<h1 class="font-headline font-bold text-lg tracking-tight text-[#246e00]">AI Masterclass</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="Family profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAteSM8Lm1P6v56zT70nw-giD6v3FChwXAk2audpPULVhA8gXm0VKd0PLEPzePDeSgL7j0pr3EbfXw-e0WZdoxlmAd_-L2PRSgRKJDtmOqWqngygJjhXq-2SQSDDJ9e00XxvAAVWyWTi61K12RHvxqtciQ0fTFhZAkXktiRMB_MDG5XaMQZKG4hutly8ldkzZF1ZBDj5xk0BglrEIR4Jkc9G-wsAoS8QXFj3FKi7qUbcZXKNDpoRqZjEq-uC4NJnGwZFCa-R-ZU2G0"/>
+</div>
+</header>
+<main class="pt-24 px-8 max-w-2xl mx-auto">
+<!-- Hero Section -->
+<section class="mb-10">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-bold mb-4">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                今週のミッション
+            </div>
+<h2 class="font-headline text-3xl font-bold leading-tight mb-4">週末の夕食献立立案</h2>
+<p class="text-on-surface-variant leading-relaxed">AIを使って、家族みんなが笑顔になる美味しい3日間の献立をサクッと作りましょう。</p>
+</section>
+<!-- Bento Layout for Mission Details -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+<!-- Tool Info Card -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_12px_32px_rgba(47,51,52,0.06)] flex flex-col items-start gap-4">
+<div class="w-12 h-12 rounded-xl bg-[#10a37f]/10 flex items-center justify-center">
+<img class="w-8 h-8" data-alt="ChatGPT Official Logo Green Icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe1DxlmZD2QJOpJFY_mkiRQEQGTaNwU1xJ5iGcSa6jWF76QnRGANpgS5BcOdFf46Rav1Cbck_Nmb9flhI3AOYPfkdOZNK1xh9CMMY91vpY5vVDqBxa9vk6Azw7im9n-x0yUGt9O7D81OGzgxkR-swIiLDNnv_2NCzoWQc54b-rBAtl7lVl5Z8opGZE4yi6DRJkQPVFZdhmRUyNiHZ1UVSu76bw559AwKkuCvsQl7_OzPqyj-R1D_R9EojLKLKYvUP91912yG95wDg"/>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1">使用ツール</h3>
+<p class="font-headline font-bold text-xl text-[#10a37f]">ChatGPT</p>
+</div>
+</div>
+<!-- Goal Summary Card -->
+<div class="bg-primary-container/30 p-6 rounded-xl shadow-[0px_12px_32px_rgba(47,51,52,0.06)] flex flex-col justify-between">
+<div>
+<h3 class="text-sm font-bold text-on-primary-container/70 uppercase tracking-wider mb-1">ゴール</h3>
+<p class="font-headline font-bold text-lg text-on-primary-container">家族が喜ぶ3日分の献立と買い物リストを完成させる</p>
+</div>
+<div class="flex -space-x-2 mt-4">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="Tasty dinner dish thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1ymoVSSVLvWKHYfV7_pyjcf7A2UA4nJFcKTrGexO-0KxTqbcGOwgTzLJ4k5FoQQvxdQe4qCLx3VG2hxTZja_o4p5-A4wvR9VYxBXgJX6Qw1mKW3qEwWalzwYlqQm4iluFC_Js-4m9COTyTYZVDSPiuvHYFS-g4aM4ACre27_T-eJqgYfWNYDYKAcdLpUE1ukCaeP8rtbODTdJpcKPrKZmchkVJmlKz-6u1dEL1rbdZbt5VxAY5pCmXG-GO4IzKwAjTvUEgSwRoFg"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="Healthy organic ingredients" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCE7gPN6Jw4K2xYheMk79QhssMrmVwpNRHyzLd6PdxIehJzx19oMV5J_ch49EmpVVWvB6yl9Ne5qmEi5XXrwB0ezdyx8uH8lqVOTuN-L4kV31Y-_-Pz7R7FZbG0gagfMW2_OfN4fnShWn-yLNR8GkMXLX1vjmo4YhHURyCXdPAeYwcyi72rk33gAZkasgubyeHFR1juL0WViZS5jYSknyEEsx-98irG2geeutY948PmRUmvzTjEW11L0da0ghUkbYX1Or5ysl7pfXk"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Mission Steps -->
+<section class="mb-10">
+<h3 class="font-headline text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">format_list_numbered</span>
+                ミッションの手順
+            </h3>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-lg border-l-4 border-primary">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">1</span>
+<p class="pt-1 text-on-surface">ChatGPTを開いて、新しいチャットを開始します。</p>
+</div>
+<div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-lg border-l-4 border-primary">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">2</span>
+<p class="pt-1 text-on-surface">下のプロンプトをコピーして、ChatGPTに貼り付けてください。</p>
+</div>
+<div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-lg border-l-4 border-primary">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">3</span>
+<p class="pt-1 text-on-surface">提案された献立に必要な材料が冷蔵庫にあるか確認します。</p>
+</div>
+</div>
+</section>
+<!-- Prompt Area -->
+<section class="mb-10 relative group">
+<div class="absolute -top-3 left-6 px-3 py-1 bg-white rounded-full text-xs font-bold text-on-surface-variant shadow-sm border border-outline-variant/20 z-10">
+                AIへの指示（プロンプト）
+            </div>
+<div class="p-8 pt-10 rounded-xl bg-surface-container-highest border border-outline-variant/30 relative">
+<p class="text-xl font-medium leading-relaxed text-on-surface">
+                    子供が喜ぶ、栄養バランスの良い3日分の夕食メニューを教えて。
+                </p>
+<button class="mt-6 flex items-center gap-2 px-6 py-3 bg-white hover:bg-surface-container-low text-primary font-bold rounded-full transition-all active:scale-95 shadow-sm border border-outline-variant/20">
+<span class="material-symbols-outlined">content_copy</span>
+                    コピーする
+                </button>
+</div>
+</section>
+<!-- Done Checklist -->
+<section class="mb-12 p-8 rounded-xl bg-secondary-container/20 border border-secondary/10">
+<h3 class="font-headline text-xl font-bold mb-6 flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">task_alt</span>
+                完成のサイン
+            </h3>
+<div class="space-y-4">
+<label class="flex items-center gap-4 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input class="peer h-7 w-7 appearance-none rounded-lg border-2 border-secondary/30 checked:bg-secondary checked:border-secondary transition-all" type="checkbox"/>
+<span class="material-symbols-outlined absolute text-white opacity-0 peer-checked:opacity-100 text-lg">check</span>
+</div>
+<span class="text-lg font-medium text-on-surface group-hover:text-secondary transition-colors">3日分のメニューが決まった</span>
+</label>
+<label class="flex items-center gap-4 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input class="peer h-7 w-7 appearance-none rounded-lg border-2 border-secondary/30 checked:bg-secondary checked:border-secondary transition-all" type="checkbox"/>
+<span class="material-symbols-outlined absolute text-white opacity-0 peer-checked:opacity-100 text-lg">check</span>
+</div>
+<span class="text-lg font-medium text-on-surface group-hover:text-secondary transition-colors">買い物リストができた</span>
+</label>
+</div>
+</section>
+<!-- Main Action -->
+<div class="flex flex-col items-center gap-4">
+<button class="w-full py-5 rounded-xl primary-gradient text-white font-headline font-extrabold text-xl shadow-[0px_12px_32px_rgba(36,110,0,0.2)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+                完成報告する
+            </button>
+<p class="text-sm text-on-surface-variant font-medium">報告すると150エナジー獲得！</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar (The Anchor) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-6 pt-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-[0px_-12px_32px_rgba(47,51,52,0.06)] rounded-t-[3rem]">
+<a class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-1.5 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-[1rem] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium">ホーム</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#96f46e] dark:bg-[#246e00] text-[#246e00] dark:text-[#96f46e] rounded-[1rem] px-5 py-1.5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="rocket_launch" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium">ミッション</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-1.5 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-[1rem] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium">ツール</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-1.5 hover:bg-[#f3f4f4] dark:hover:bg-gray-800 rounded-[1rem] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium">設定</span>
+</a>
+</nav>
+</body></html>

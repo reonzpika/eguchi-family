@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function IdeasPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,15 +103,19 @@ export default function IdeasPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="flex-1 overflow-y-auto px-5 py-6">
-        <div className="mb-5 flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-extrabold text-foreground">私のアイデア</h1>
-          <span className="text-[10px] text-muted">🔒 このページはあなただけが見られます</span>
-        </div>
+    <div className="min-h-[max(884px,100dvh)] bg-background pb-32 text-on-surface">
+      <div className="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-8">
+        <section className="mb-10">
+          <h1 className="font-headline text-3xl font-bold tracking-tight text-on-surface">
+            私のアイデア
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            この一覧はあなただけが見られます。
+          </p>
+        </section>
 
         {loading ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <SkeletonCard height="h-32" />
             <SkeletonCard height="h-32" />
             <SkeletonCard height="h-32" />
@@ -119,17 +123,19 @@ export default function IdeasPage() {
         ) : error ? (
           <ErrorMessage message={error} />
         ) : ideas.length === 0 ? (
-          <EmptyState
-            emoji="💡"
-            title="まだアイデアがありません"
-            description="最初のアイデアを追加しましょう"
-            action={{
-              label: "アイデアを追加する →",
-              onClick: () => router.push("/ideas/new"),
-            }}
-          />
+          <div className="rounded-2xl bg-surface-container-low p-8 text-center editorial-shadow">
+            <EmptyState
+              emoji="💡"
+              title="まだアイデアがありません"
+              description="最初のアイデアを追加しましょう"
+              action={{
+                label: "アイデアを追加する",
+                onClick: () => router.push("/ideas/new"),
+              }}
+            />
+          </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {ideas.map((idea) => (
               <IdeaCard
                 key={idea.id}
@@ -150,15 +156,15 @@ export default function IdeasPage() {
           onClick={() => !renameLoading && setRenameIdeaId(null)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-border-warm bg-white p-4 shadow-lg"
+            className="w-full max-w-sm rounded-2xl bg-surface-container-lowest p-5 editorial-shadow"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="mb-3 text-sm font-semibold text-foreground">タイトルを変更</p>
+            <p className="mb-3 text-sm font-semibold text-on-surface">タイトルを変更</p>
             <input
               type="text"
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
-              className="mb-4 w-full rounded-xl border border-border-warm bg-white px-4 py-3 text-foreground focus:border-primary focus:outline-none"
+              className="mb-4 w-full rounded-xl bg-surface-container-low px-4 py-3 text-on-surface ring-2 ring-transparent placeholder:text-on-surface-variant focus:outline-none focus:ring-primary/30"
               placeholder="アイデアのタイトル"
               autoFocus
             />
@@ -167,7 +173,7 @@ export default function IdeasPage() {
                 type="button"
                 onClick={() => !renameLoading && setRenameIdeaId(null)}
                 disabled={renameLoading}
-                className="flex-1 rounded-xl border border-border-warm bg-white py-3 font-semibold text-foreground disabled:opacity-50"
+                className="flex-1 rounded-xl bg-surface-container-high py-3 font-semibold text-on-surface transition-transform active:scale-[0.98] disabled:opacity-50"
               >
                 キャンセル
               </button>
@@ -175,7 +181,7 @@ export default function IdeasPage() {
                 type="button"
                 onClick={handleRenameSubmit}
                 disabled={renameLoading || !renameValue.trim()}
-                className="flex-1 rounded-xl bg-primary py-3 font-semibold text-white disabled:opacity-50"
+                className="flex-1 rounded-xl bg-primary-gradient py-3 font-semibold text-on-primary transition-transform active:scale-[0.98] disabled:opacity-50"
               >
                 {renameLoading ? "..." : "保存"}
               </button>
@@ -184,12 +190,12 @@ export default function IdeasPage() {
         </div>
       )}
 
-      {/* Floating action button */}
       <Link
         href="/ideas/new"
-        className="fixed bottom-24 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl text-white shadow-lg transition-transform active:scale-[0.95]"
+        className="fixed bottom-24 right-8 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-on-primary shadow-[0px_12px_32px_rgba(36,110,0,0.3)] transition-transform active:scale-90"
+        aria-label="新しいアイデア"
       >
-        ＋
+        <span className="material-symbols-outlined text-3xl">add</span>
       </Link>
     </div>
   );

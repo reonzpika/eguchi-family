@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { MoreVertical } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -36,20 +35,6 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [ownershipFilter, setOwnershipFilter] = useState<"mine" | "others">("mine");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const filterMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!filterMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (filterMenuRef.current && !filterMenuRef.current.contains(target)) {
-        setFilterMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [filterMenuOpen]);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -99,11 +84,11 @@ export default function ProjectsPage() {
     return true;
   });
 
-  const getStatusColor = (status: string) => {
-    if (status === "計画中") return "bg-secondary text-white";
-    if (status === "進行中") return "bg-success text-white";
-    if (status === "完了") return "bg-muted text-white";
-    return "bg-muted text-white";
+  const getStatusStyle = (statusLabel: string) => {
+    if (statusLabel === "計画中") return "bg-secondary-container text-on-secondary-container";
+    if (statusLabel === "進行中") return "bg-primary-container text-on-primary-container";
+    if (statusLabel === "完了") return "bg-surface-container-high text-on-surface";
+    return "bg-surface-container-high text-on-surface";
   };
 
   const getStatusLabel = (status: string) => {
@@ -122,171 +107,156 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
-        <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
-        <PageSkeleton variant="default" />
+      <div className="min-h-[max(884px,100dvh)] bg-background px-4 pb-8 pt-6 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="mb-6 font-headline text-3xl font-bold text-on-surface">プロジェクト</h1>
+          <PageSkeleton variant="default" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
-        <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
-        <ErrorMessage message={error} />
+      <div className="min-h-[max(884px,100dvh)] bg-background px-4 pb-8 pt-6 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="mb-6 font-headline text-3xl font-bold text-on-surface">プロジェクト</h1>
+          <ErrorMessage message={error} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-140px)] flex-col px-5 py-6">
-      {/* Page title */}
-      <h1 className="mb-6 text-2xl font-bold text-foreground">プロジェクト</h1>
+    <div className="min-h-[max(884px,100dvh)] bg-background pb-28 text-on-surface">
+      <div className="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-8">
+        <section className="mb-10">
+          <h1 className="font-headline text-3xl font-bold tracking-tight text-on-surface">
+            プロジェクト
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            家族のマイルストーンと進捗をまとめて見られます。
+          </p>
+        </section>
 
-      {/* Ownership filter + status menu */}
-      <div className="mb-6 flex items-center justify-between gap-2">
-        <div className="flex gap-2">
-          {[
-            { value: "mine" as const, label: "自分の" },
-            { value: "others" as const, label: "家族の" },
-          ].map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setOwnershipFilter(value)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                ownershipFilter === value
-                  ? "bg-primary text-white"
-                  : "bg-white text-foreground border border-border-warm"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative shrink-0" ref={filterMenuRef}>
-          <button
-            type="button"
-            onClick={() => setFilterMenuOpen((o) => !o)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-warm bg-white text-muted transition-colors hover:bg-gray-50"
-            aria-label="フィルター"
-            aria-expanded={filterMenuOpen}
-          >
-            <MoreVertical size={20} strokeWidth={2} />
-          </button>
-
-          {filterMenuOpen && (
-            <div
-              className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-xl border border-border-warm bg-white py-1 shadow-lg"
-              role="menu"
-            >
-              {statusOptions.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setStatusFilter(value);
-                    setFilterMenuOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 text-left text-sm ${
-                    statusFilter === value
-                      ? "bg-primary/10 font-semibold text-primary"
-                      : "text-foreground hover:bg-gray-50"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {filteredProjects.length === 0 ? (
-        <EmptyState
-          emoji="📁"
-          title={
-            ownershipFilter === "others"
-              ? "家族のプロジェクトはまだありません"
-              : "自分のプロジェクトはまだありません"
-          }
-          description={
-            ownershipFilter === "mine"
-              ? "アイデアをプロジェクトに昇格させましょう"
-              : "家族がプロジェクトを作成するとここに表示されます"
-          }
-          action={
-            ownershipFilter === "mine"
-              ? {
-                  label: "アイデアをプロジェクトに昇格させる →",
-                  onClick: () => router.push("/ideas"),
-                }
-              : undefined
-          }
-        />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {filteredProjects.map((project) => {
-            const ownerName = project.shared_with_all
-              ? "家族"
-              : (project.users?.name || "不明");
-            const ownerColor = project.shared_with_all
-              ? "#7CC9A0"
-              : (project.users?.avatar_color || "#F97B6B");
-            const statusLabel = getStatusLabel(project.status);
-
-            return (
-              <div
-                key={project.id}
-                onClick={() => router.push(`/projects/${project.id}`)}
-                className="cursor-pointer rounded-2xl border border-border-warm bg-white p-4 transition-transform active:scale-[0.98]"
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-wrap gap-3">
+            {[
+              { value: "mine" as const, label: "自分の" },
+              { value: "others" as const, label: "家族の" },
+            ].map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setOwnershipFilter(value)}
+                className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all active:scale-95 ${
+                  ownershipFilter === value
+                    ? "bg-primary text-on-primary"
+                    : "bg-surface-container-low text-on-surface hover:bg-surface-container"
+                }`}
               >
-                {/* Emoji icon area */}
-                <div
-                  className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-                  style={{ backgroundColor: `${ownerColor}33` }}
-                >
-                  📁
-                </div>
-
-                {/* Project title */}
-                <h3 className="mb-2 text-base font-bold text-foreground">
-                  {project.title}
-                </h3>
-
-                {/* Description */}
-                <p className="mb-2 text-sm text-muted">{project.description}</p>
-
-                {/* Progress bar */}
-                <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-border-warm">
-                  <div
-                    className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-                    style={{
-                      width: `${Math.min(100, Math.max(0, project.progress_percentage ?? 0))}%`,
-                    }}
-                  />
-                </div>
-
-                {/* Owner and status */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar name={ownerName} size={24} />
-                    <span className="text-xs text-muted">{ownerName}</span>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(
-                      statusLabel
-                    )}`}
-                  >
-                    {statusLabel}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="scrollbar-hide flex flex-wrap gap-3 overflow-x-auto pb-1">
+            {statusOptions.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setStatusFilter(value)}
+                className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all active:scale-95 ${
+                  statusFilter === value
+                    ? "bg-primary text-on-primary"
+                    : "bg-surface-container-low text-on-surface hover:bg-surface-container"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+
+        {filteredProjects.length === 0 ? (
+          <div className="rounded-2xl bg-surface-container-low p-8 text-center editorial-shadow">
+            <EmptyState
+              emoji="📁"
+              title={
+                ownershipFilter === "others"
+                  ? "家族のプロジェクトはまだありません"
+                  : "自分のプロジェクトはまだありません"
+              }
+              description={
+                ownershipFilter === "mine"
+                  ? "アイデアをプロジェクトに昇格させましょう"
+                  : "家族がプロジェクトを作成するとここに表示されます"
+              }
+              action={
+                ownershipFilter === "mine"
+                  ? {
+                      label: "アイデアへ",
+                      onClick: () => router.push("/ideas"),
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {filteredProjects.map((project) => {
+              const ownerName = project.shared_with_all
+                ? "家族"
+                : (project.users?.name || "不明");
+              const statusLabel = getStatusLabel(project.status);
+
+              return (
+                <button
+                  key={project.id}
+                  type="button"
+                  onClick={() => router.push(`/projects/${project.id}`)}
+                  className="editorial-shadow w-full rounded-2xl bg-surface-container-lowest p-5 text-left transition-transform active:scale-[0.98]"
+                >
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-low">
+                    <span
+                      className="material-symbols-outlined text-3xl text-primary"
+                      style={{ fontVariationSettings: '"FILL" 1' }}
+                    >
+                      folder
+                    </span>
+                  </div>
+                  <h3 className="mb-2 font-headline text-base font-bold text-on-surface">
+                    {project.title}
+                  </h3>
+                  <p className="mb-3 line-clamp-2 text-sm text-on-surface-variant">
+                    {project.description}
+                  </p>
+                  <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-container">
+                    <div
+                      className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, project.progress_percentage ?? 0))}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Avatar name={ownerName} size={24} />
+                      <span className="text-xs text-on-surface-variant">{ownerName}</span>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
+                        statusLabel
+                      )}`}
+                    >
+                      {statusLabel}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

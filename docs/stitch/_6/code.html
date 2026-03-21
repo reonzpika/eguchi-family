@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AIマスタークラス - 設定</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-bright": "#f9f9f9",
+              "primary-fixed-dim": "#89e561",
+              "on-primary-fixed": "#144500",
+              "surface-variant": "#e0e3e4",
+              "on-surface": "#2f3334",
+              "on-secondary": "#e2feff",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed": "#f9b854",
+              "on-error": "#fff7f6",
+              "secondary-dim": "#005d60",
+              "on-tertiary-container": "#573800",
+              "on-secondary-container": "#005d60",
+              "error": "#aa371c",
+              "surface": "#f9f9f9",
+              "surface-container-highest": "#e0e3e4",
+              "outline": "#777b7c",
+              "error-container": "#fa7150",
+              "secondary-container": "#77f9fe",
+              "on-error-container": "#671200",
+              "on-secondary-fixed-variant": "#00686b",
+              "background": "#f9f9f9",
+              "on-tertiary": "#fff8f2",
+              "on-tertiary-fixed": "#3c2500",
+              "inverse-primary": "#96f46e",
+              "inverse-surface": "#0c0f0f",
+              "primary": "#246e00",
+              "on-surface-variant": "#5c6060",
+              "primary-fixed": "#96f46e",
+              "surface-container-low": "#f3f4f4",
+              "on-primary-container": "#1c5b00",
+              "surface-dim": "#d7dbdb",
+              "on-primary": "#ecffdc",
+              "tertiary-dim": "#724b00",
+              "error-dim": "#821a01",
+              "inverse-on-surface": "#9c9d9d",
+              "tertiary-container": "#f9b854",
+              "on-primary-fixed-variant": "#216500",
+              "outline-variant": "#afb2b3",
+              "secondary-fixed-dim": "#67eaef",
+              "secondary": "#006a6d",
+              "primary-container": "#96f46e",
+              "surface-container-high": "#e6e8e9",
+              "on-secondary-fixed": "#00494b",
+              "on-tertiary-fixed-variant": "#634000",
+              "tertiary-fixed-dim": "#eaaa48",
+              "tertiary": "#825600",
+              "secondary-fixed": "#77f9fe",
+              "primary-dim": "#1f6000",
+              "on-background": "#2f3334",
+              "surface-tint": "#246e00",
+              "surface-container": "#eceeee"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans", "Noto Sans JP"],
+              "body": ["Be Vietnam Pro", "Noto Sans JP"],
+              "label": ["Be Vietnam Pro", "Noto Sans JP"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f9f9f9;
+            color: #2f3334;
+            font-family: 'Be Vietnam Pro', 'Noto Sans JP', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-[#f9f9f9] dark:bg-gray-900 flex justify-between items-center px-8 py-4 w-full sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#246e00] dark:text-[#96f46e] text-2xl">settings</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold text-lg dark:text-white">AIマスタークラス</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzCkZPrrZV-noO845TZkhgVa2EvdeYsG2fxVG8KpNcf1-jA3zFgeqb69XkvGn-djs2AFGH_tzsSaC3K5oMDL7ROUmpxr5Z0KQOzyLXxwNGpnH_--XAlW0I1nZyLPniiiYsMsa5o3ZrQGJPXRDUW-CXYu4oRNX-ejhAH7cu5mcJXE0A4NdnFJFpLAs8IZOuS5sCoxLGZ9iIQ6aRGkLzzCswNOzeo7d-dYYv9xwODX7nhXbs_gOl9MM_vknL21bjsdLUGZGWezTLtko"/>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-6 pb-32 pt-4">
+<!-- Profile Section -->
+<section class="mb-8">
+<div class="bg-surface-container-lowest rounded-xl p-6 flex items-center gap-6 shadow-[0px_12px_32px_rgba(47,51,52,0.06)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 rounded-full -mr-16 -mt-16"></div>
+<div class="relative w-20 h-20 rounded-full ring-4 ring-primary-container/30 overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="Portrait of Kenta the father" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwaMhVKkddsCua7KbklaiBanOzuGIEEgfgNEvU-ZLSQgNOtE6vYtWtoBp1Trg5u6qqYah4uhSlrhi4UkICeXeBPK3OX7xhHCylfJhAXATmaTQxxEnu-qibLeTJHPtNjPl-aLW5xPhZzACi3H5WHPvcfRowVLZj1zMsD4r3dfPtWSgKQxLnUFL9jGr1-I0bFTLl29JzhFPnou9ks52YlM54YlECDvppyjVGcRJ7kUt2V0zZbi9QcTtHGPBKDizNcW5FVkqN3MeB3Ac"/>
+</div>
+<div class="flex-1">
+<h2 class="font-headline font-bold text-2xl text-on-surface">健太</h2>
+<p class="text-on-surface-variant text-sm font-medium">管理者 / パパ</p>
+</div>
+<button class="bg-surface-container-high p-3 rounded-full text-primary hover:bg-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</section>
+<!-- Family Management -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-bold text-lg text-on-surface">家族設定</h3>
+<button class="text-primary font-bold text-sm flex items-center gap-1 bg-primary-container/20 px-4 py-2 rounded-full hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                    メンバーを追加
+                </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Member 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center gap-2 border border-transparent hover:border-primary/20 transition-all">
+<div class="w-14 h-14 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-2xl" data-weight="fill">face_3</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">ママ</p>
+<p class="text-[10px] text-on-surface-variant">共同管理者</p>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center gap-2 border border-transparent hover:border-primary/20 transition-all">
+<div class="w-14 h-14 rounded-full bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-2xl" data-weight="fill">child_care</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">ゆうな</p>
+<p class="text-[10px] text-on-surface-variant">学習者</p>
+</div>
+</div>
+<!-- Member 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col items-center text-center gap-2 border border-transparent hover:border-primary/20 transition-all">
+<div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" data-weight="fill">face_5</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">りくと</p>
+<p class="text-[10px] text-on-surface-variant">学習者</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification & Settings List -->
+<section class="space-y-4">
+<!-- Notification Card -->
+<div class="bg-surface-container-lowest rounded-lg p-1 overflow-hidden">
+<div class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-tertiary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">notifications_active</span>
+</div>
+<div>
+<p class="font-bold text-on-surface text-sm">プッシュ通知</p>
+<p class="text-[11px] text-on-surface-variant">重要なお知らせを受け取る</p>
+</div>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+</div>
+<!-- App Settings Bento -->
+<div class="grid grid-cols-1 gap-2">
+<!-- Theme Toggle -->
+<div class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-secondary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-secondary">dark_mode</span>
+</div>
+<p class="font-bold text-on-surface text-sm">ダークモード</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<!-- Language Selection -->
+<div class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-primary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">language</span>
+</div>
+<div>
+<p class="font-bold text-on-surface text-sm">言語設定</p>
+<p class="text-[11px] text-on-surface-variant">日本語 (JP)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<!-- Help/FAQ -->
+<div class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-on-surface-variant/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-on-surface-variant">help_center</span>
+</div>
+<p class="font-bold text-on-surface text-sm">ヘルプ &amp; FAQ</p>
+</div>
+<span class="material-symbols-outlined text-outline">open_in_new</span>
+</div>
+</div>
+</section>
+<!-- Account / Sign Out -->
+<section class="mt-12 mb-8">
+<button class="w-full bg-error-container/10 border border-error-container/20 text-error font-bold py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-error-container hover:text-white transition-all active:scale-95">
+<span class="material-symbols-outlined">logout</span>
+                ログアウト
+            </button>
+<p class="text-center text-outline-variant text-[10px] mt-6">App Version 2.4.0 (Build 82)</p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-lg rounded-t-[3rem] shadow-[0px_-12px_32px_rgba(47,51,52,0.06)]">
+<!-- Home -->
+<div class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-2 hover:opacity-80 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-medium">ホーム</span>
+</div>
+<!-- Missions -->
+<div class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-2 hover:opacity-80 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="task">task</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-medium">ミッション</span>
+</div>
+<!-- Tools -->
+<div class="flex flex-col items-center justify-center text-[#2f3334] dark:text-gray-400 px-5 py-2 hover:opacity-80 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-medium">ツール</span>
+</div>
+<!-- Settings (ACTIVE) -->
+<div class="flex flex-col items-center justify-center bg-[#96f46e] dark:bg-[#246e00] text-[#246e00] dark:text-[#96f46e] rounded-[1.5rem] px-5 py-2 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings" data-weight="fill" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-medium">設定</span>
+</div>
+</nav>
+</body></html>

@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { NotificationType, NotificationPriority } from "@/types/database";
+import { sendPushNotification } from "@/lib/web-push";
 
 export interface SendNotificationPayload {
   user_id: string;
@@ -15,9 +16,11 @@ export interface SendNotificationPayload {
 
 /**
  * Insert a notification for a user (internal use from API routes).
- * Push is not implemented yet; send_push is ignored.
+ * Optionally sends web push when send_push is true and VAPID is configured.
  */
-export async function sendNotification(payload: SendNotificationPayload): Promise<{ id: string } | null> {
+export async function sendNotification(
+  payload: SendNotificationPayload
+): Promise<{ id: string } | null> {
   try {
     const admin = createAdminClient();
     const { data, error } = await admin
@@ -39,6 +42,29 @@ export async function sendNotification(payload: SendNotificationPayload): Promis
       console.error("sendNotification error:", error);
       return null;
     }
+
+    if (payload.send_push && data?.id) {
+      const { data: subs } = await admin
+        .from("push_subscriptions")
+        .select("endpoint, p256dh_key, auth_key")
+        .eq("user_id", payload.user_id)
+        .eq("is_active", true);
+
+      for (const sub of subs ?? []) {
+        await sendPushNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh_key, auth: sub.auth_key },
+          },
+          {
+            title: payload.title,
+            body: payload.body,
+            url: payload.action_url ?? "/",
+          }
+        );
+      }
+    }
+
     return data;
   } catch (err) {
     console.error("sendNotification error:", err);

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>みんなの相談広場 - Digital Engawa</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary": "#825600",
+              "surface-container": "#eceeee",
+              "primary-dim": "#1f6000",
+              "on-background": "#2f3334",
+              "on-surface-variant": "#5c6060",
+              "surface": "#f9f9f9",
+              "primary-fixed": "#96f46e",
+              "surface-container-highest": "#e0e3e4",
+              "on-secondary-fixed-variant": "#00686b",
+              "on-error-container": "#671200",
+              "secondary": "#006a6d",
+              "primary-container": "#96f46e",
+              "outline-variant": "#afb2b3",
+              "on-secondary-container": "#005d60",
+              "on-primary": "#ecffdc",
+              "background": "#f9f9f9",
+              "on-tertiary-container": "#573800",
+              "inverse-surface": "#0c0f0f",
+              "on-primary-fixed": "#144500",
+              "secondary-container": "#77f9fe",
+              "on-primary-container": "#1c5b00",
+              "surface-container-high": "#e6e8e9",
+              "secondary-dim": "#005d60",
+              "error-dim": "#821a01",
+              "inverse-on-surface": "#9c9d9d",
+              "error-container": "#fa7150",
+              "tertiary-fixed": "#f9b854",
+              "primary": "#246e00",
+              "on-tertiary-fixed-variant": "#634000",
+              "on-primary-fixed-variant": "#216500",
+              "tertiary-fixed-dim": "#eaaa48",
+              "tertiary-container": "#f9b854",
+              "on-surface": "#2f3334",
+              "on-tertiary": "#fff8f2",
+              "outline": "#777b7c",
+              "secondary-fixed-dim": "#67eaef",
+              "secondary-fixed": "#77f9fe",
+              "on-error": "#fff7f6",
+              "error": "#aa371c",
+              "on-secondary-fixed": "#00494b",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed": "#3c2500",
+              "primary-fixed-dim": "#89e561",
+              "surface-tint": "#246e00",
+              "surface-variant": "#e0e3e4",
+              "surface-container-low": "#f3f4f4",
+              "tertiary-dim": "#724b00",
+              "surface-bright": "#f9f9f9",
+              "on-secondary": "#e2feff",
+              "surface-dim": "#d7dbdb",
+              "inverse-primary": "#96f46e"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans", "Noto Sans JP"],
+              "body": ["Be Vietnam Pro", "Noto Sans JP"],
+              "label": ["Be Vietnam Pro", "Noto Sans JP"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+        }
+        .signature-gradient {
+            background: linear-gradient(135deg, #246e00 0%, rgba(150, 244, 110, 0.2) 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#f9f9f9] dark:bg-slate-950 docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Profile" data-alt="User profile circular avatar photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAZ8Orwns1KWkM6RYiexNeFIxHLbfJKauO8xo166i8d_KdKKN2UK6yMXBslm0sD2FE5pK8IS_-vE0iSoZiBrZVr16BmqAewWZFdf3-RhXC3sXUCKbbJYjpQyI-4d229Ym-OCJsjUHA_L3dw-ipJhRwDcLI50SMwH3zeZZz5NkvxZWHMosRK-85esyn0XER6ATZVEeh0xckA-PJ7aWdPty2589PEG7GB3DiQPvXszONxvnL_faXOXe9W9Y_iYgtsWw_yrZFzvfI_-c"/>
+</div>
+<h1 class="font-headline font-bold text-lg text-[#246e00] dark:text-[#96f46e] tracking-tight">Digital Engawa</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#246e00] dark:text-[#96f46e] hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="px-8 mt-6 max-w-4xl mx-auto">
+<!-- Hero Section -->
+<section class="mb-10">
+<h2 class="font-headline text-4xl font-extrabold text-on-surface mb-2 tracking-tight">みんなの相談広場</h2>
+<p class="text-on-surface-variant text-lg">家族の「これどうしてる？」を共有する温かい場所</p>
+</section>
+<!-- Search Bar -->
+<div class="mb-8 group">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-5 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-5 pl-14 pr-6 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 transition-all outline-none" placeholder="話題を検索する..." type="text"/>
+</div>
+</div>
+<!-- Discussion Categories (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+<div class="md:col-span-2 p-8 rounded-xl signature-gradient text-on-primary relative overflow-hidden flex flex-col justify-end min-h-[180px]">
+<span class="material-symbols-outlined text-6xl absolute -top-2 -right-2 opacity-20 rotate-12" data-icon="auto_awesome">auto_awesome</span>
+<h3 class="text-2xl font-bold mb-1">AIの活用術</h3>
+<p class="opacity-90">みんながどんな風にAIを生活に取り入れているか覗いてみよう</p>
+</div>
+<div class="bg-tertiary-container p-6 rounded-xl text-on-tertiary-container flex flex-col justify-between">
+<span class="material-symbols-outlined text-4xl" data-icon="lightbulb">lightbulb</span>
+<div>
+<h3 class="text-xl font-bold">プロジェクト</h3>
+<p class="text-sm">家族の新しい挑戦アイディア</p>
+</div>
+</div>
+</div>
+<!-- Thread List -->
+<div class="space-y-4">
+<!-- Thread Item 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl hover:shadow-[0px_12px_32px_rgba(47,51,52,0.06)] transition-all cursor-pointer group border border-transparent hover:border-primary/10">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-primary-container text-on-primary-container text-xs font-bold px-3 py-1 rounded-full">AI活用</span>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-base" data-icon="chat_bubble">chat_bubble</span>
+<span>24件の返信</span>
+</div>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">AIを具体的に何に使っていますか？</h4>
+<p class="text-on-surface-variant line-clamp-2 leading-relaxed">献立作成以外に、子供の宿題のヒント出しに使っている方がいればコツを教えてほしいです！特に算数の文章題について...</p>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-surface-container overflow-hidden">
+<img alt="User" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRmEz2SrLHLipvEaMVyYW_oPJDeYbWG7U1voa-JgY1FdIP4QaLerdUyjfkJq8wNFl4R2AYP-P-wtqMRTn9k4l4zkmS0FBzLGvLyBpHSy88alrZ0_Rl4X5scyGN3u9f4G35I3n0e3B029Pn6sgNDNGbqo5wyYlehuN0DbyDLbXPjSyFR2FXYffIfNvnVI2H6ucX8TLghFU5rAPXOcGn5_P97Z1IX0bVR2jeSydaBEwYX2kw4bLsjMrBpUQXrkiY7Pk6cV_ZOigHFeo"/>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">3時間前に投稿 - さくらママ</span>
+</div>
+</div>
+<!-- Thread Item 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl hover:shadow-[0px_12px_32px_rgba(47,51,52,0.06)] transition-all cursor-pointer group border border-transparent hover:border-primary/10">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-secondary-container text-on-secondary-container text-xs font-bold px-3 py-1 rounded-full">安心・安全</span>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-base" data-icon="chat_bubble">chat_bubble</span>
+<span>12件の返信</span>
+</div>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">子供にAIを使わせる時のルール作り</h4>
+<p class="text-on-surface-variant line-clamp-2 leading-relaxed">プライバシー設定や、AIの回答を鵜呑みにしないための教育について。みなさんのご家庭で決めているルールはありますか？</p>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-surface-container overflow-hidden">
+<img alt="User" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1-DlNPZiVqFZFpueeRJS1BgqBhC4rQhSdwKrLzNgpAtD2rx57YZSMVlEkaqplOTeYZpv-fb057WrcCSj1Dc4UAvMetblxXdMPb7zsPKZTrDc5yR29TQfilY89NiB4HxAAsU0ppstOSsif1yJhvQg2Aq6z_BYLQLBJV1dBpMvPWc1eSKIUoUxvjCzJ0Yrz2Tm2UM04q8J7pp6EKFCGlL-3wQzZvbpMgF7ddagvEoDz9PPy-IyQAnw8Wy4k1ER8m66i9E79gwtSmaY"/>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">昨日投稿 - たかしパパ</span>
+</div>
+</div>
+<!-- Thread Item 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl hover:shadow-[0px_12px_32px_rgba(47,51,52,0.06)] transition-all cursor-pointer group border border-transparent hover:border-primary/10">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-tertiary-container text-on-tertiary-container text-xs font-bold px-3 py-1 rounded-full">アイディア</span>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-base" data-icon="chat_bubble">chat_bubble</span>
+<span>8件の返信</span>
+</div>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">週末の「家族会議」が盛り上がる質問案</h4>
+<p class="text-on-surface-variant line-clamp-2 leading-relaxed">AIに生成してもらった「もしも質問」で週末の夕食がとても盛り上がりました。他にどんなお題がおすすめですか？</p>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-surface-container overflow-hidden">
+<img alt="User" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_0D6_2CUi7ik7kBaiiGmRPwmnKJVGFZQ-4MfKm-izQCH9jvYAePUd9C8Gs6usCyC8MgDwal4I1yNIzprPOcOKzJU35wvS_LzM1ObbjPEqbw7pL0Xkdsbu8fvHkMgIzLOGKuWCf-fKm-THRWa_7zXxmemKqHUSwfKW3kt4DZhuaFmVae-B7O4QhEF-TNI7lyU4ZacxOEzAFEwPBiwFhEEYfQfaXmLTTqW7WctmYdW9usse2WlJHLiMeNQvhleyqx7UbnEAZPmyBJo"/>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">2日前投稿 - ひなた家</span>
+</div>
+</div>
+</div>
+<!-- Floating AI Prompt (Glassmorphism) -->
+<div class="fixed bottom-28 right-8 z-40 max-w-[280px]">
+<div class="glass-card p-5 rounded-xl border border-white/40 shadow-xl flex items-start gap-4" style="border-bottom-left-radius: 0.5rem;">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-fixed" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<p class="text-sm font-medium leading-snug text-on-surface">新しい相談のスレッドを立てるお手伝いをしましょうか？</p>
+<button class="mt-3 text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+                        スレッドを作成する
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-[#f3f4f4]/20 shadow-[0px_-12px_32px_rgba(47,51,52,0.06)] z-50 rounded-t-[3rem]">
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#96f46e]/20 dark:bg-[#246e00]/20 text-[#246e00] dark:text-[#96f46e] rounded-[1.5rem] px-5 py-1 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium mt-1">Missions</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="auto_fix_high">auto_fix_high</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium mt-1">Tools</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium mt-1">Settings</span>
+</a>
+</nav>
+</body></html>

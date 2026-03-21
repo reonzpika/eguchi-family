@@ -8,17 +8,17 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        primary: "#F97B6B",
-        "primary-light": "#FDECEA",
-        secondary: "#F9C784",
-        "bg-warm": "#FFFAF5",
-        muted: "#9E9E9E",
-        success: "#7CC9A0",
-        "success-light": "#EBF7F2",
-        "border-warm": "#F0E8DF",
-        foreground: "#2D2D2D",
-        error: "#C73E1D",
+      fontFamily: {
+        headline: [
+          "var(--font-plus-jakarta)",
+          "var(--font-noto-sans-jp)",
+          "sans-serif",
+        ],
+        sans: [
+          "var(--font-be-vietnam)",
+          "var(--font-noto-sans-jp)",
+          "sans-serif",
+        ],
       },
     },
   },
