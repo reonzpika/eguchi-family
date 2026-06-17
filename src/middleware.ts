@@ -39,6 +39,22 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/settings", req.url));
   }
 
+  // Learning journey v1: hide the old ideation/social features. Code is kept,
+  // routes are just unreachable (redirect to the journey home).
+  const HIDDEN_PAGES = [
+    "/ideas",
+    "/projects",
+    "/tools",
+    "/missions",
+    "/showcase",
+    "/discussions",
+    "/inspiration",
+    "/feed",
+  ];
+  if (HIDDEN_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 

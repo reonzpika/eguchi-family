@@ -3,13 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/** Strategy A: Stitch bottom bar (hub + workspace). Settings: header gear only. */
+/** Learning journey: a guide + tracker. Settings via the header gear. */
 const tabs = [
-  { id: "home", label: "ホーム", icon: "home", path: "/" },
-  { id: "missions", label: "ミッション", icon: "task_alt", path: "/missions" },
-  { id: "tools", label: "ツール", icon: "category", path: "/tools" },
-  { id: "ideas", label: "アイデア", icon: "lightbulb", path: "/ideas" },
-  { id: "projects", label: "プロジェクト", icon: "folder", path: "/projects" },
+  { id: "home", label: "旅", icon: "map", path: "/" },
+  { id: "library", label: "ライブラリ", icon: "menu_book", path: "/learning" },
 ] as const;
 
 export function BottomNav() {
