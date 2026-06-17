@@ -1,6 +1,5 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { getMemberById } from "@/lib/family-members";
 import { createAdminClient } from "@/lib/supabase-admin";
 
@@ -10,33 +9,46 @@ export const authOptions: NextAuthOptions = {
       name: "Family",
       credentials: {
         member_id: { label: "Member", type: "text" },
-        password: { label: "Password", type: "password" },
       },
+      // Family app: no password. Pick your name and you are in. The user row is
+      // created on first sign-in if it does not exist yet (e.g. a member who
+      // never logged in before).
       async authorize(credentials) {
-        if (!credentials?.member_id || !credentials?.password) {
+        if (!credentials?.member_id) {
           return null;
         }
-        const { member_id, password } = credentials;
-        const memberConfig = getMemberById(member_id);
+        const memberConfig = getMemberById(credentials.member_id);
         if (!memberConfig) {
           return null;
         }
         const supabase = createAdminClient();
-        const { data: user, error } = await supabase
+        const { data: existing } = await supabase
           .from("users")
-          .select("id, password_hash")
-          .eq("member_id", member_id)
-          .single();
+          .select("id")
+          .eq("member_id", memberConfig.member_id)
+          .maybeSingle();
 
-        if (error || !user?.password_hash) {
-          return null;
+        let userId = existing?.id as string | undefined;
+        if (!userId) {
+          const { data: created, error: insertError } = await supabase
+            .from("users")
+            .insert({
+              member_id: memberConfig.member_id,
+              name: memberConfig.name,
+              role: memberConfig.role,
+              avatar_color: null,
+            })
+            .select("id")
+            .single();
+          if (insertError || !created) {
+            console.error("Sign-in user create failed:", insertError);
+            return null;
+          }
+          userId = created.id as string;
         }
-        const valid = await bcrypt.compare(password, user.password_hash);
-        if (!valid) {
-          return null;
-        }
+
         return {
-          id: user.id,
+          id: userId,
           member_id: memberConfig.member_id,
           name: memberConfig.name,
           role: memberConfig.role,
