@@ -5,11 +5,13 @@ import { isAdmin } from "@/lib/family-members";
 
 const isPublicRoute = (pathname: string) => /^\/sign-in(\/.*)?$/.test(pathname);
 const isAuthApiRoute = (pathname: string) => pathname.startsWith("/api/auth");
+// Keep-alive is hit by the Vercel cron (no session); it must bypass auth.
+const isKeepAliveRoute = (pathname: string) => pathname === "/api/keep-alive";
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  if (isPublicRoute(pathname) || isAuthApiRoute(pathname)) {
+  if (isPublicRoute(pathname) || isAuthApiRoute(pathname) || isKeepAliveRoute(pathname)) {
     return NextResponse.next();
   }
 
