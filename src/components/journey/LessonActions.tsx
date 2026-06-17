@@ -23,6 +23,7 @@ export function LessonActions({
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [reflection, setReflection] = useState(existingReflection);
+  const [showMemo, setShowMemo] = useState(!!existingReflection);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(alreadyDone);
   const [error, setError] = useState<string | null>(null);
@@ -89,26 +90,19 @@ export function LessonActions({
         Claudeで試す
       </a>
 
-      {/* Done + reflection */}
+      {/* Done (one tap). Memo is optional and hidden by default. */}
       <div className="rounded-2xl border border-surface-variant bg-surface-container-lowest p-4">
-        <p className="mb-2 text-xs font-bold text-on-surface-variant">
-          できたら：{doneLabel}
-        </p>
-        <textarea
-          value={reflection}
-          onChange={(e) => setReflection(e.target.value)}
-          placeholder="ひとことメモ（任意）：やってみてどうでしたか？"
-          rows={2}
-          className="mb-3 w-full resize-none rounded-xl border border-surface-variant bg-white p-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:outline-none"
-        />
+        {doneLabel && (
+          <p className="mb-3 text-xs font-bold text-on-surface-variant">
+            できたら：{doneLabel}
+          </p>
+        )}
         <button
           type="button"
           onClick={handleDone}
           disabled={saving}
           className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full px-6 py-3 text-base font-bold transition-transform active:scale-[0.98] disabled:opacity-60 ${
-            done
-              ? "bg-primary-container text-primary"
-              : "bg-primary text-on-primary"
+            done ? "bg-primary-container text-primary" : "bg-primary text-on-primary"
           }`}
         >
           <span
@@ -117,8 +111,26 @@ export function LessonActions({
           >
             {done ? "check_circle" : "done"}
           </span>
-          {saving ? "保存中..." : done ? "完了ずみ（もう一度保存）" : "できた！"}
+          {saving ? "保存中..." : done ? "完了ずみ" : "できた！"}
         </button>
+
+        {showMemo ? (
+          <textarea
+            value={reflection}
+            onChange={(e) => setReflection(e.target.value)}
+            placeholder="ひとことメモ（任意）：やってみてどうでしたか？"
+            rows={2}
+            className="mt-3 w-full resize-none rounded-xl border border-surface-variant bg-white p-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowMemo(true)}
+            className="mt-3 block w-full text-center text-xs text-on-surface-variant underline"
+          >
+            ひとことメモを残す（任意）
+          </button>
+        )}
         {error && <p className="mt-2 text-xs text-error">{error}</p>}
       </div>
     </div>

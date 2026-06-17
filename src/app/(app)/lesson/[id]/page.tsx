@@ -74,9 +74,19 @@ export default async function LessonPage({
           {lesson.title}
         </h1>
 
-        {/* Concept */}
+        {/* Summary: lead + highlights */}
         <section className="mb-6 rounded-2xl bg-surface-container-low p-5">
-          <p className="text-sm leading-relaxed text-on-surface">{lesson.concept}</p>
+          <p className="mb-3 text-sm font-bold leading-relaxed text-on-surface">
+            {lesson.concept}
+          </p>
+          <ul className="space-y-2">
+            {lesson.highlights.map((h, i) => (
+              <li key={i} className="flex gap-2 text-sm leading-relaxed text-on-surface">
+                <span className="mt-px shrink-0 font-bold text-primary">•</span>
+                <span>{h}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* Do it in Claude */}
