@@ -3,8 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getDiscoveryProfileForUser } from "@/lib/discovery-profile";
-import { LESSONS, LAYERS, fillTopic } from "@/lib/curriculum/lessons";
+import { getLesson, CHAPTERS, fillTopic } from "@/lib/curriculum/lessons";
 import { LessonActions } from "@/components/journey/LessonActions";
+import { PromptBuilder } from "@/components/journey/PromptBuilder";
+import { PicoBubble } from "@/components/journey/Pico";
+
+const CLAUDE_URL = "https://claude.ai/";
 
 export default async function LessonPage({
   params,
@@ -12,20 +16,18 @@ export default async function LessonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lesson = LESSONS.find((l) => l.id === id);
+  const lesson = getLesson(id);
 
-  if (!lesson || lesson.locked) {
+  if (!lesson || lesson.kind === "locked") {
     return (
       <div className="mx-auto max-w-2xl px-5 py-16 text-center text-on-surface-variant">
         <p className="mb-4">このレッスンはまだ準備中です。</p>
-        <Link href="/" className="font-bold text-primary">
-          ← 旅にもどる
-        </Link>
+        <Link href="/" className="font-bold text-primary">← 旅にもどる</Link>
       </div>
     );
   }
 
-  const layer = LAYERS.find((l) => l.id === lesson.layerId);
+  const chapter = CHAPTERS.find((c) => c.id === lesson.chapterId);
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
 
@@ -52,6 +54,7 @@ export default async function LessonPage({
   }
 
   const task = fillTopic(lesson.task, topic);
+  const isBuilder = lesson.kind === "magic" || lesson.kind === "companion";
 
   return (
     <div className="min-h-[100dvh] bg-background pb-32 text-on-surface">
@@ -64,33 +67,35 @@ export default async function LessonPage({
           旅にもどる
         </Link>
 
-        {layer && (
-          <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-primary">
-            <span>{layer.emoji}</span>
-            <span>{layer.title}</span>
+        {lesson.pico && <PicoBubble line={lesson.pico} />}
+
+        {chapter && (
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-primary">
+            <span>{chapter.emoji}</span>
+            <span>{chapter.title}</span>
           </div>
         )}
         <h1 className="mb-6 font-headline text-2xl font-extrabold text-on-surface">
           {lesson.title}
         </h1>
 
-        {/* Summary: lead + highlights */}
-        <section className="mb-6 rounded-2xl bg-surface-container-low p-5">
-          <p className="mb-3 text-sm font-bold leading-relaxed text-on-surface">
-            {lesson.concept}
-          </p>
-          <ul className="space-y-2">
-            {lesson.highlights.map((h, i) => (
-              <li key={i} className="flex gap-2 text-sm leading-relaxed text-on-surface">
-                <span className="mt-px shrink-0 font-bold text-primary">•</span>
-                <span>{h}</span>
-              </li>
+        {/* 学ぶ */}
+        <section className="mb-7">
+          <h2 className="mb-2 flex items-center gap-1.5 font-headline text-base font-bold text-on-surface">
+            <span className="material-symbols-outlined text-lg text-tertiary">menu_book</span>
+            学ぶ
+          </h2>
+          <div className="space-y-3 rounded-2xl bg-surface-container-low p-5">
+            {lesson.learn.split("\n\n").map((para, i) => (
+              <p key={i} className="text-sm leading-relaxed text-on-surface">
+                {para}
+              </p>
             ))}
-          </ul>
+          </div>
         </section>
 
-        {/* Do it in Claude */}
-        <section className="mb-6">
+        {/* やってみよう */}
+        <section className="mb-7">
           <h2 className="mb-2 flex items-center gap-1.5 font-headline text-base font-bold text-on-surface">
             <span className="material-symbols-outlined text-lg text-primary">bolt</span>
             やってみよう
@@ -99,32 +104,44 @@ export default async function LessonPage({
             {task}
           </p>
 
-          <LessonActions
-            lessonId={lesson.id}
-            copyPrompt={lesson.copyPrompt}
-            alreadyDone={alreadyDone}
-            existingReflection={existingReflection}
-            doneLabel={lesson.done}
-          />
+          {/* help article, at the point of use */}
+          {lesson.article && (
+            <a
+              href={lesson.article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 flex items-center justify-between rounded-2xl border border-surface-variant bg-surface-container-lowest p-4 transition-colors hover:bg-surface-container-low"
+            >
+              <span className="flex items-center gap-2 text-sm font-bold text-on-surface">
+                <span className="material-symbols-outlined text-lg text-secondary">help</span>
+                やり方：{lesson.article.label}
+              </span>
+              <span className="material-symbols-outlined text-base text-on-surface-variant">open_in_new</span>
+            </a>
+          )}
+
+          {isBuilder ? (
+            <PromptBuilder mode={lesson.kind === "magic" ? "magic" : "companion"} />
+          ) : (
+            <a
+              href={CLAUDE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-6 py-4 text-base font-bold text-on-secondary shadow-sm transition-transform active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined">open_in_new</span>
+              Claudeを開く
+            </a>
+          )}
         </section>
 
-        {/* Learn more */}
-        {lesson.article && (
-          <a
-            href={lesson.article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between rounded-2xl border border-surface-variant bg-surface-container-lowest p-4 transition-colors hover:bg-surface-container-low"
-          >
-            <span className="flex items-center gap-2 text-sm font-bold text-on-surface">
-              <span className="material-symbols-outlined text-lg text-secondary">menu_book</span>
-              もっと知る：{lesson.article.label}
-            </span>
-            <span className="material-symbols-outlined text-base text-on-surface-variant">
-              open_in_new
-            </span>
-          </a>
-        )}
+        {/* できた */}
+        <LessonActions
+          lessonId={lesson.id}
+          alreadyDone={alreadyDone}
+          existingReflection={existingReflection}
+          doneLabel={lesson.done}
+        />
       </div>
     </div>
   );
