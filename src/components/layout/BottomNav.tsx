@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/** Learning journey: a guide + tracker. Settings via the header gear. */
+/** Workshop model: two modes flank ピコ. Settings via the header gear. */
 const tabs = [
-  { id: "home", label: "旅", icon: "map", path: "/" },
-  { id: "library", label: "ライブラリ", icon: "menu_book", path: "/learning" },
+  { id: "business", label: "ビジネス", icon: "storefront", path: "/business" },
+  { id: "explore", label: "アイデア", icon: "lightbulb", path: "/explore" },
+  { id: "pico", label: "ピコ", icon: "smart_toy", path: "/pico" },
 ] as const;
 
 export function BottomNav() {
@@ -20,9 +21,7 @@ export function BottomNav() {
       <div className="scrollbar-hide flex items-stretch justify-between gap-0 overflow-x-auto sm:justify-around">
         {tabs.map((tab) => {
           const isActive =
-            tab.path === "/"
-              ? pathname === "/"
-              : pathname === tab.path || pathname.startsWith(`${tab.path}/`);
+            pathname === tab.path || pathname.startsWith(`${tab.path}/`);
           return (
             <Link
               key={tab.id}
