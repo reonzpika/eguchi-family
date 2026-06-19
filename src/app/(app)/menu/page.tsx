@@ -88,19 +88,6 @@ export default function MenuPage() {
         </button>
 
         <button
-          onClick={() => router.push("/feed")}
-          className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
-        >
-          <div>
-            <div className="text-base font-bold text-foreground">
-              📋 家族のタイムライン
-            </div>
-            <div className="mt-1 text-xs text-muted">アイデアとプロジェクトの活動</div>
-          </div>
-          <span className="text-muted">→</span>
-        </button>
-
-        <button
           onClick={() => router.push("/notifications")}
           className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
         >
@@ -109,19 +96,6 @@ export default function MenuPage() {
               🔔 通知
             </div>
             <div className="mt-1 text-xs text-muted">お知らせを確認する</div>
-          </div>
-          <span className="text-muted">→</span>
-        </button>
-
-        <button
-          onClick={() => router.push("/showcase")}
-          className="flex items-center justify-between rounded-2xl border border-border-warm bg-white p-4 text-left transition-transform active:scale-[0.98]"
-        >
-          <div>
-            <div className="text-base font-bold text-foreground">
-              🏢 ファミリーショーケース
-            </div>
-            <div className="mt-1 text-xs text-muted">みんなのビジネスを見る</div>
           </div>
           <span className="text-muted">→</span>
         </button>

@@ -1,15 +1,22 @@
 {
-  "name": "Family Workspace",
-  "short_name": "Workspace",
+  "name": "Eguchi Family AI Masterclass",
+  "short_name": "AIマスタークラス",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFAF5",
   "theme_color": "#F97B6B",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

@@ -1,7 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { createServerComponentClient } from "@/lib/supabase-server";
 import { authOptions } from "@/lib/auth";
 
 /**
@@ -80,7 +79,7 @@ export async function PATCH(
       );
     }
 
-    const supabase = await createServerComponentClient();
+    const supabase = createAdminClient();
 
     const { data: idea, error: ideaError } = await supabase
       .from("ideas")

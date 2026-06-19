@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Eguchi Family AI Masterclass">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF3EC"/>
+      <stop offset="1" stop-color="#FFE2D6"/>
+    </linearGradient>
+    <linearGradient id="star" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF9A7A"/>
+      <stop offset="1" stop-color="#F97B6B"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- piko: a friendly four-point sparkle -->
+  <path d="M256 96 C 276 196, 316 236, 416 256 C 316 276, 276 316, 256 416 C 236 316, 196 276, 96 256 C 196 236, 236 196, 256 96 Z" fill="url(#star)"/>
+  <circle cx="226" cy="246" r="16" fill="#ffffff"/>
+  <circle cx="286" cy="246" r="16" fill="#ffffff"/>
+  <circle cx="229" cy="249" r="7" fill="#4A3B36"/>
+  <circle cx="289" cy="249" r="7" fill="#4A3B36"/>
+  <path d="M232 280 Q256 300 280 280" stroke="#4A3B36" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <circle cx="206" cy="272" r="9" fill="#FFB39E" opacity="0.8"/>
+  <circle cx="306" cy="272" r="9" fill="#FFB39E" opacity="0.8"/>
+</svg>

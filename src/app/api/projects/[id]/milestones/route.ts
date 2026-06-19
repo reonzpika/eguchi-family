@@ -1,6 +1,5 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { createServerComponentClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { canEditProject } from "@/lib/project-permissions";
@@ -28,7 +27,7 @@ export async function GET(
       );
     }
 
-    const supabase = await createServerComponentClient();
+    const supabase = createAdminClient();
 
     const { data: milestones, error: milestonesError } = await supabase
       .from("milestones")
