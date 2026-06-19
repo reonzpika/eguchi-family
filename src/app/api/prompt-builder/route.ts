@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import anthropic from "@/lib/anthropic";
+import anthropic, { CLAUDE_MODEL } from "@/lib/anthropic";
 import { authOptions } from "@/lib/auth";
 import {
   getDiscoveryProfileForUser,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const res = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE_MODEL,
       max_tokens: 1500,
       system,
       messages: convo,

@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import anthropic from "@/lib/anthropic";
+import anthropic, { CLAUDE_MODEL } from "@/lib/anthropic";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import { recordActivity } from "@/lib/activity-feed";
@@ -152,7 +152,7 @@ ${reflectionContext}
 上記を分析し、JSONのみ返答してください。`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE_MODEL,
       max_tokens: 1024,
       system: ANALYSIS_SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMessage }],

@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import anthropic from "@/lib/anthropic";
+import anthropic, { CLAUDE_MODEL } from "@/lib/anthropic";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { authOptions } from "@/lib/auth";
 import {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     ];
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE_MODEL,
       max_tokens: 1000,
       system: systemPrompt,
       messages: claudeMessages,
