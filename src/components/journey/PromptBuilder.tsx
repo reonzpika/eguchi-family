@@ -7,21 +7,63 @@ const CLAUDE_URL = "https://claude.ai/";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const KICKOFF: Record<string, string> = {
-  magic: "Claudeで何か作ってみたいです。手伝ってください。",
-  companion: "自分専用の相棒を作りたいです。手伝ってください。",
-};
+type Preset = { id: string; emoji: string; label: string };
+type Track = { id: string; emoji: string; label: string; presets: Preset[] };
+
+// The magic-hook menu. Each tap seeds a strong creative brief; the member just
+// adds their own idea + a vibe, then Claude fills the rest boldly.
+const TRACKS: Track[] = [
+  {
+    id: "game",
+    emoji: "🎮",
+    label: "ゲーム",
+    presets: [
+      { id: "quiz", emoji: "❓", label: "○×クイズ" },
+      { id: "omikuji", emoji: "🔮", label: "占い・おみくじ" },
+      { id: "memory", emoji: "🃏", label: "記憶ゲーム" },
+      { id: "raise", emoji: "🌱", label: "タップ育成" },
+      { id: "roulette", emoji: "🎯", label: "ルーレットで決める" },
+    ],
+  },
+  {
+    id: "site",
+    emoji: "🌐",
+    label: "ウェブサイト・ツール",
+    presets: [
+      { id: "about", emoji: "🙋", label: "自己紹介ページ" },
+      { id: "card", emoji: "🎉", label: "お祝いカード" },
+      { id: "countdown", emoji: "⏳", label: "カウントダウン" },
+      { id: "gallery", emoji: "🖼️", label: "思い出ギャラリー" },
+      { id: "habit", emoji: "✅", label: "習慣トラッカー" },
+    ],
+  },
+];
+
+const KICKOFF_COMPANION = "自分専用の相棒を作りたいです。手伝ってください。";
+
+const seedForPreset = (trackLabel: string, label: string) =>
+  `「${label}」（${trackLabel}）を作りたい。まず私自身のアイデア（テーマ・中身）をひとつ聞いて、次に雰囲気を聞いて、あとはあなたが大胆に楽しく考えて。`;
+const SEED_SURPRISE =
+  "おまかせで作りたい（ゲームでもページでもOK）。私の「好きなこと・興味」をひとつ聞いて、あとはぜんぶあなたが楽しく考えて。";
+const SEED_FREE =
+  "自分で作りたいものを考えたい。何が作れるか具体例も出しながら、何を作りたいか聞いて。";
 
 /**
- * Conversational AI prompt-builder. ピコ (via the Claude API) asks what it needs,
- * then crafts a ready-to-paste prompt. Used by lesson 1-2 (magic) and 3-2 (companion).
+ * Conversational AI prompt-builder. For the magic hook (mode "magic") the member
+ * first taps a preset, then ピコ asks 1-2 short questions (with tappable example
+ * suggestions) and crafts a ready-to-paste mega-prompt. mode "companion" skips
+ * the picker and goes straight to the conversation.
  */
 export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
+  const [phase, setPhase] = useState<"pick" | "chat">(
+    mode === "magic" ? "pick" : "chat"
+  );
   const [messages, setMessages] = useState<Msg[]>([]);
   const [question, setQuestion] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [finalPrompt, setFinalPrompt] = useState<string | null>(null);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const started = useRef(false);
@@ -29,6 +71,7 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
   async function send(history: Msg[]) {
     setLoading(true);
     setError(null);
+    setSuggestions([]);
     try {
       const res = await fetch("/api/prompt-builder", {
         method: "POST",
@@ -45,6 +88,7 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
         setQuestion(null);
       } else {
         setQuestion(data.content);
+        setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
         setMessages([...history, { role: "assistant", content: data.content }]);
       }
     } catch {
@@ -54,14 +98,26 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
     }
   }
 
+  // Companion mode has no picker; start the conversation on mount.
   useEffect(() => {
-    if (started.current) return;
+    if (mode !== "companion" || started.current) return;
     started.current = true;
-    const seed: Msg[] = [{ role: "user", content: KICKOFF[mode] }];
+    const seed: Msg[] = [{ role: "user", content: KICKOFF_COMPANION }];
     setMessages(seed);
     send(seed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function start(seedText: string) {
+    const seed: Msg[] = [{ role: "user", content: seedText }];
+    setMessages(seed);
+    setPhase("chat");
+    setFinalPrompt(null);
+    setError(null);
+    setQuestion(null);
+    setInput("");
+    send(seed);
+  }
 
   function submit() {
     const answer = input.trim();
@@ -70,17 +126,28 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
     setMessages(next);
     setInput("");
     setQuestion(null);
+    setSuggestions([]);
     send(next);
+  }
+
+  function addSuggestion(s: string) {
+    setInput((prev) => (prev.trim() ? `${prev.trim()}、${s}` : s));
   }
 
   function restart() {
     setFinalPrompt(null);
     setError(null);
     setQuestion(null);
+    setSuggestions([]);
     setInput("");
-    const seed: Msg[] = [{ role: "user", content: KICKOFF[mode] }];
-    setMessages(seed);
-    send(seed);
+    if (mode === "magic") {
+      setMessages([]);
+      setPhase("pick");
+    } else {
+      const seed: Msg[] = [{ role: "user", content: KICKOFF_COMPANION }];
+      setMessages(seed);
+      send(seed);
+    }
   }
 
   async function copy() {
@@ -145,6 +212,50 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
     );
   }
 
+  // Preset picker (magic mode, before the conversation)
+  if (phase === "pick") {
+    return (
+      <div className="space-y-5">
+        <PicoBubble line="何を作ってみる？ えらんでね（あとから自由に変えられるよ）" />
+        {TRACKS.map((track) => (
+          <div key={track.id}>
+            <p className="mb-2 text-xs font-bold text-on-surface-variant">
+              {track.emoji} {track.label}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {track.presets.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => start(seedForPreset(track.label, p.label))}
+                  className="rounded-full border border-surface-variant bg-white px-3 py-2 text-sm text-on-surface transition-transform active:scale-95"
+                >
+                  {p.emoji} {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => start(SEED_SURPRISE)}
+            className="rounded-full bg-secondary px-4 py-2 text-sm font-bold text-on-secondary transition-transform active:scale-95"
+          >
+            🎲 おまかせ
+          </button>
+          <button
+            type="button"
+            onClick={() => start(SEED_FREE)}
+            className="rounded-full border border-surface-variant bg-white px-3 py-2 text-sm text-on-surface transition-transform active:scale-95"
+          >
+            ✏️ 自分で考える
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Question / loading
   return (
     <div>
@@ -158,6 +269,23 @@ export function PromptBuilder({ mode }: { mode: "magic" | "companion" }) {
       )}
       {question && (
         <div className="space-y-3">
+          {suggestions.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-xs text-on-surface-variant">タップで追加できるよ：</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => addSuggestion(s)}
+                    className="rounded-full border border-primary/40 bg-primary-container/40 px-3 py-1.5 text-xs text-on-surface transition-transform active:scale-95"
+                  >
+                    + {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
