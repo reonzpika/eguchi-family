@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PicoBubble } from "@/components/journey/Pico";
+import { FirstRunBanner } from "@/components/workshop/FirstRunBanner";
 
 /**
  * アイデアさがし: the free explore + find space. Make something fun (the magic
@@ -10,6 +11,8 @@ export default function ExplorePage() {
     <div className="min-h-[100dvh] bg-background pb-32 text-on-surface">
       <div className="mx-auto max-w-2xl px-5 pt-6">
         <PicoBubble line="何か作ってみよう！ それか、一緒にアイデアを見つけよう！" size={52} />
+
+        <FirstRunBanner />
 
         <div className="space-y-3">
           <Link

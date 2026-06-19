@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { IDEA_FINDER_RECIPE } from "@/lib/workshop/recipes";
 import { PicoBubble } from "@/components/journey/Pico";
+import { HelpCard } from "@/components/workshop/HelpCard";
 
 const CLAUDE_URL = "https://claude.ai/";
 
@@ -28,6 +29,9 @@ export default function FindPage() {
           アイデアさがし
         </Link>
         <PicoBubble line="アイデア探し専用のClaudeを作ろう！このレシピを貼ってね。" size={52} />
+
+        <HelpCard trigger="project" />
+        <HelpCard trigger="privacy" />
 
         <ol className="mb-5 space-y-2 rounded-2xl bg-surface-container-low p-4 text-sm text-on-surface-variant">
           <li>1. 下のレシピをコピー</li>

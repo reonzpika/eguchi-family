@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getStage } from "@/lib/workshop/recipes";
 import { WorkshopChat } from "@/components/workshop/WorkshopChat";
+import { HelpCard } from "@/components/workshop/HelpCard";
 import { PicoBubble } from "@/components/journey/Pico";
 
 /**
@@ -62,6 +63,9 @@ export default async function PicoPage({
             <h1 className="mb-4 font-headline text-xl font-bold text-on-surface">
               {stage.emoji} {stage.label}
             </h1>
+            <HelpCard trigger="project" />
+            <HelpCard trigger="privacy" />
+            {stage.key === "check" && <HelpCard trigger="doubt" />}
             <WorkshopChat
               mode="stage"
               businessId={params.business}
@@ -86,7 +90,7 @@ export default async function PicoPage({
           <Link href="/business" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
             🗺️ わたしのビジネスを見る
           </Link>
-          <Link href="/learning" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
+          <Link href="/learn" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
             📖 助けて・使い方
           </Link>
         </div>

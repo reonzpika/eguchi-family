@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PromptBuilder } from "@/components/journey/PromptBuilder";
 import { PicoBubble } from "@/components/journey/Pico";
+import { HelpCard } from "@/components/workshop/HelpCard";
 
 /** 作ってみる: the magic hook. Reuses the existing preset-led prompt builder. */
 export default function MakePage() {
@@ -12,6 +13,7 @@ export default function MakePage() {
           アイデアさがし
         </Link>
         <PicoBubble line="いきなりだけど、すごいものを作るよ！何を作る？" size={52} />
+        <HelpCard trigger="prompt" />
         <PromptBuilder mode="magic" />
       </div>
     </div>
