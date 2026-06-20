@@ -10,6 +10,7 @@ export type PicoMood =
   | "think"
   | "surprised"
   | "sleep"
+  | "tired"
   | "celebrate";
 
 export const PICO_MOODS: PicoMood[] = [
@@ -18,6 +19,7 @@ export const PICO_MOODS: PicoMood[] = [
   "think",
   "surprised",
   "sleep",
+  "tired",
   "celebrate",
 ];
 
@@ -106,6 +108,18 @@ function PicoFace({ mood }: { mood: PicoMood }) {
           <path d="M35 33q4 5 8 0" stroke="#3A2A1A" strokeWidth="2.2" strokeLinecap="round" fill="none" />
           {/* tiny soft mouth */}
           <path d="M30 45q2 1.6 4 0" stroke="#3A2A1A" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+        </>
+      );
+    case "tired":
+      return (
+        <>
+          {/* heavy, droopy half-closed eyes */}
+          <path d="M20 34q5 3 9 0" stroke="#3A2A1A" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          <path d="M35 34q5 3 9 0" stroke="#3A2A1A" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          <circle cx="24.5" cy="35.6" r="1.3" fill="#3A2A1A" />
+          <circle cx="39.5" cy="35.6" r="1.3" fill="#3A2A1A" />
+          {/* small weary mouth */}
+          <path d="M29 45q3 1.4 6 0" stroke="#3A2A1A" strokeWidth="1.8" strokeLinecap="round" fill="none" />
         </>
       );
     case "happy":
