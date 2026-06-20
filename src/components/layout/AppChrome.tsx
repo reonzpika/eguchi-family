@@ -27,13 +27,21 @@ export function AppChrome({
 }) {
   const pathname = usePathname() ?? "";
   const hide = shouldHideChrome(pathname);
+  // The town-map home fills the viewport exactly and must not scroll.
+  const isHome = pathname === "/";
+
+  const containerClassName = isHome
+    ? "mx-auto flex h-dvh w-full max-w-7xl flex-col overflow-hidden bg-background"
+    : "mx-auto min-h-screen w-full max-w-7xl bg-background";
 
   const mainClassName = hide
     ? "h-dvh overflow-hidden"
+    : isHome
+    ? "min-h-0 flex-1 overflow-hidden"
     : "min-h-dvh pb-28";
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-7xl bg-background">
+    <div className={containerClassName}>
       {!hide && <StitchAppBar />}
       <main className={mainClassName}>{children}</main>
       {!hide && <BottomNav />}
