@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { PicoAvatar } from "@/components/journey/Pico";
 import { AssistantMessage } from "@/components/workshop/AssistantMessage";
 
@@ -9,13 +10,34 @@ type Msg = { role: "user" | "assistant"; content: string };
 const GREETING =
   "やあ！ぼくピコ。なんでもきいてね 😊 作りたいもの、調べたいこと、こまっていること、なんでもどうぞ。";
 
-/** ピコ, the flexible conversational helper (free chat, web-search-capable). */
-export function PicoChat() {
+/** One persistent ピコ chat. Loads its history, streams replies, persists both sides. */
+export function PicoChat({ conversationId }: { conversationId: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const loadedRef = useRef(false);
+
+  // load persisted history on open
+  useEffect(() => {
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/workshop/conversations/${conversationId}/messages`);
+        if (res.ok) {
+          const data = await res.json();
+          const msgs: Msg[] = (data.messages ?? [])
+            .map((m: { role: string; content: string }) => ({ role: m.role, content: m.content }))
+            .filter((m: Msg) => m.role === "user" || m.role === "assistant");
+          setMessages(msgs);
+        }
+      } catch {
+        /* show empty */
+      }
+    })();
+  }, [conversationId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,7 +55,7 @@ export function PicoChat() {
       const res = await fetch("/api/workshop/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ conversationId, message: text }),
       });
       if (!res.ok || !res.body) {
         let msg = "うまくいきませんでした。";
@@ -46,7 +68,6 @@ export function PicoChat() {
         setError(msg);
         return;
       }
-      // stream the reply in as it arrives
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = "";
@@ -81,15 +102,21 @@ export function PicoChat() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col px-5 pb-32 pt-6 text-on-surface">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col px-5 pb-32 pt-4 text-on-surface">
+      <Link href="/pico" className="mb-2 inline-flex items-center gap-1 text-sm text-on-surface-variant">
+        <span className="material-symbols-outlined text-base">arrow_back</span>
+        チャット一覧
+      </Link>
+
       <div className="flex-1 space-y-4">
-        {/* greeting */}
-        <div className="flex items-start gap-3">
-          <PicoAvatar size={44} />
-          <div className="mt-1 max-w-[80%] rounded-2xl rounded-tl-sm bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
-            {GREETING}
+        {messages.length === 0 && (
+          <div className="flex items-start gap-3">
+            <PicoAvatar size={44} />
+            <div className="mt-1 max-w-[80%] rounded-2xl rounded-tl-sm bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
+              {GREETING}
+            </div>
           </div>
-        </div>
+        )}
 
         {messages.map((m, i) =>
           m.role === "assistant" ? (
@@ -118,7 +145,6 @@ export function PicoChat() {
         <div ref={endRef} />
       </div>
 
-      {/* input */}
       <div className="sticky bottom-24 mt-4 flex items-end gap-2 rounded-2xl border border-surface-variant bg-white p-2 shadow-sm">
         <textarea
           value={input}

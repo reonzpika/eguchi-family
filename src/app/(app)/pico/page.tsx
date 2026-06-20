@@ -6,6 +6,7 @@ import { getStage } from "@/lib/workshop/recipes";
 import { WorkshopChat } from "@/components/workshop/WorkshopChat";
 import { HelpCard } from "@/components/workshop/HelpCard";
 import { PicoChat } from "@/components/workshop/PicoChat";
+import { PicoChatList } from "@/components/workshop/PicoChatList";
 
 /**
  * ピコ tab: the engine room. Runs the readiness gate (?mode=gate) and the per-stage
@@ -14,7 +15,7 @@ import { PicoChat } from "@/components/workshop/PicoChat";
 export default async function PicoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: string; business?: string; stage?: string }>;
+  searchParams: Promise<{ mode?: string; business?: string; stage?: string; c?: string }>;
 }) {
   const params = await searchParams;
   const session = await getServerSession(authOptions);
@@ -78,6 +79,9 @@ export default async function PicoPage({
     }
   }
 
-  // Free landing -> conversational ピコ
-  return <PicoChat />;
+  // A chat (a conversation) or the chat list
+  if (params.c) {
+    return <PicoChat conversationId={params.c} />;
+  }
+  return <PicoChatList />;
 }
