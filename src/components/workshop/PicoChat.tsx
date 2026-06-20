@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PicoAvatar } from "@/components/journey/Pico";
+import { AssistantMessage } from "@/components/workshop/AssistantMessage";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -94,8 +95,8 @@ export function PicoChat() {
           m.role === "assistant" ? (
             <div key={i} className="flex items-start gap-3">
               <PicoAvatar size={44} />
-              <div className="mt-1 max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
-                {m.content}
+              <div className="mt-1 max-w-[85%] rounded-2xl rounded-tl-sm bg-secondary-container px-4 py-3 text-on-secondary-container">
+                <AssistantMessage text={m.content} />
               </div>
             </div>
           ) : (
