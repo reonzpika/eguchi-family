@@ -137,7 +137,7 @@ export function PicoChat({ conversationId }: { conversationId: string }) {
 
         {loading && (
           <div className="flex items-center gap-3 text-sm text-on-surface-variant">
-            <PicoAvatar size={40} />
+            <PicoAvatar size={40} mood="think" />
             ピコが考えているよ...
           </div>
         )}

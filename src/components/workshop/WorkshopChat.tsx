@@ -212,7 +212,7 @@ export function WorkshopChat({
     if (readyIdea) {
       return (
         <div className="space-y-4">
-          <PicoBubble line={readyLine || "いいね！これは面白いよ。一緒に形にしよう！"} size={52} />
+          <PicoBubble line={readyLine || "いいね！これは面白いよ。一緒に形にしよう！"} size={52} mood="cheer" />
           <div className="rounded-2xl border border-primary/30 bg-primary-container/30 p-4">
             <p className="mb-1 text-xs font-bold text-primary">あなたのアイデア</p>
             <p className="text-sm text-on-surface">{readyIdea}</p>
@@ -235,7 +235,7 @@ export function WorkshopChat({
           <PicoBubble line={question} size={52} />
         ) : (
           <div className="mb-4 flex items-center gap-3 text-sm text-on-surface-variant">
-            <PicoAvatar size={44} />
+            <PicoAvatar size={44} mood="think" />
             ピコが考えているよ...
           </div>
         )}
@@ -269,7 +269,7 @@ export function WorkshopChat({
   if (done && verdict?.ready) {
     return (
       <div className="space-y-4 text-center">
-        <PicoBubble line={verdict.content || `「${stage.label}」クリア！よくやったね、ほんとにすごいよ。`} size={52} />
+        <PicoBubble line={verdict.content || `「${stage.label}」クリア！よくやったね、ほんとにすごいよ。`} size={52} mood="celebrate" />
         <button
           type="button"
           onClick={() => {
@@ -295,7 +295,7 @@ export function WorkshopChat({
       {/* ピコ's feedback if not ready yet, plus a continuation prompt */}
       {verdict && !verdict.ready && (
         <>
-          <PicoBubble line={verdict.content || "いい線だよ。もう少しだけ深めてみよう。"} size={44} />
+          <PicoBubble line={verdict.content || "いい線だよ。もう少しだけ深めてみよう。"} size={44} mood="think" />
           {verdict.megaPrompt && <CopyBox text={verdict.megaPrompt} label="つづきは、これをClaudeに貼ってね" />}
         </>
       )}
