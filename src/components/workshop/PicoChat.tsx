@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PicoAvatar } from "@/components/journey/Pico";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -16,6 +16,10 @@ export function PicoChat() {
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
@@ -30,17 +34,41 @@ export function PicoChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next }),
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setError(data.error ?? "うまくいきませんでした。");
+      if (!res.ok || !res.body) {
+        let msg = "うまくいきませんでした。";
+        try {
+          const d = await res.json();
+          if (d?.error) msg = d.error;
+        } catch {
+          /* not json */
+        }
+        setError(msg);
         return;
       }
-      setMessages([...next, { role: "assistant", content: data.reply }]);
+      // stream the reply in as it arrives
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      let started = false;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+        acc += chunk;
+        if (!started) {
+          started = true;
+          setLoading(false);
+        }
+        setMessages([...next, { role: "assistant", content: acc }]);
+      }
+      if (!started) {
+        setMessages([...next, { role: "assistant", content: "うまくいきませんでした。もう一度ためしてね。" }]);
+      }
     } catch {
       setError("つうしんに失敗しました。");
     } finally {
       setLoading(false);
-      setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
   }
 

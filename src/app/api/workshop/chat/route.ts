@@ -58,22 +58,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid messages" }, { status: 400 });
   }
 
-  try {
-    const res = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 2048,
-      system: PICO_CHAT_SYSTEM,
-      messages,
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
-    });
-    const reply = res.content
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("")
-      .trim();
-    if (!reply) throw new Error("empty reply");
-    return NextResponse.json({ reply });
-  } catch (error) {
-    console.error("pico chat error:", error);
-    return NextResponse.json({ error: FRIENDLY_ERROR }, { status: 500 });
-  }
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const mstream = anthropic.messages.stream({
+          model: CLAUDE_MODEL,
+          max_tokens: 2048,
+          system: PICO_CHAT_SYSTEM,
+          messages,
+          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
+        });
+        for await (const event of mstream) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+            controller.enqueue(encoder.encode(event.delta.text));
+          }
+        }
+      } catch (error) {
+        console.error("pico chat error:", error);
+        controller.enqueue(encoder.encode(FRIENDLY_ERROR));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+    },
+  });
 }
