@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PicoAvatar } from "@/components/journey/Pico";
 
@@ -11,106 +11,138 @@ type Business = {
   status: string;
 } | null;
 
-/** A placed building: tap to navigate, with a label underneath. Pops in on load. */
-function Building({
-  img,
-  alt,
+/* ---- isometric grid maths (design space) ----
+ * Tiles sit on a diamond grid: screenX=(col-row)*TW/2, screenY=(col+row)*TH/2.
+ * Source ground tile is 257x129 (a 2:1 diamond); we render it at TW wide. */
+const SRC_TW = 257;
+const TW = 116; // rendered tile width
+const TH = (TW * 129) / 257; // rendered tile height (~58)
+const S = TW / SRC_TW; // sprite scale from source px
+
+const COLS = 5;
+const ROWS = 5;
+const ORIGIN_X = (ROWS - 1) * (TW / 2); // keep posX >= 0
+const ORIGIN_Y = 150; // headroom for tall buildings/trees
+const DW = (COLS - 1 + ROWS - 1) * (TW / 2) + TW; // design canvas width
+const DH = ORIGIN_Y + (COLS - 1 + ROWS - 1) * (TH / 2) + TH + 28; // design canvas height
+
+function tilePos(col: number, row: number) {
+  return {
+    x: ORIGIN_X + (col - row) * (TW / 2),
+    y: ORIGIN_Y + (col + row) * (TH / 2),
+  };
+}
+function cellCenter(col: number, row: number) {
+  const p = tilePos(col, row);
+  return { x: p.x + TW / 2, y: p.y + TH / 2 };
+}
+const depth = (col: number, row: number) => (col + row) * 2;
+
+/* ---- map definition ---- */
+const ROAD = new Set<string>();
+for (let i = 0; i < COLS; i++) {
+  ROAD.add(`2,${i}`); // central column
+  ROAD.add(`${i},2`); // central row
+}
+const isRoad = (c: number, r: number) => ROAD.has(`${c},${r}`);
+
+type Obj = { src: string; sw: number; sh: number };
+const SP = {
+  cottage: { src: "/town/cottage.png", sw: 225, sh: 193 },
+  market: { src: "/town/market.png", sw: 261, sh: 203 },
+  library: { src: "/town/library.png", sw: 425, sh: 345 },
+  shop: { src: "/town/shop.png", sw: 225, sh: 193 },
+  tree1: { src: "/town/tree-01.png", sw: 139, sh: 210 },
+  tree3: { src: "/town/tree-03.png", sw: 142, sh: 209 },
+  tree5: { src: "/town/tree-05.png", sw: 134, sh: 193 },
+  fpink: { src: "/town/flowers-pink.png", sw: 24, sh: 13 },
+  fyellow: { src: "/town/flowers-yellow.png", sw: 24, sh: 13 },
+} satisfies Record<string, Obj>;
+
+// decorative objects on ground cells: [col, row, sprite, scaleMul]
+const DECOR: [number, number, Obj, number?][] = [
+  [1, 1, SP.tree1], [3, 1, SP.tree3], [1, 3, SP.tree5], [3, 3, SP.tree1],
+  [0, 1, SP.tree3, 0.85], [4, 3, SP.tree5, 0.85],
+  [1, 0, SP.fpink, 1], [3, 4, SP.fyellow, 1], [0, 3, SP.fpink, 1],
+];
+
+// ピコ patrols the road, cell by cell
+const PICO_PATH: [number, number][] = [
+  [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [2, 1], [2, 2],
+  [3, 2], [4, 2], [3, 2], [2, 2], [2, 3], [2, 4], [2, 3],
+];
+
+/** A building tile: tap to navigate, label underneath, pops in on load. */
+function BuildingTile({
+  col,
+  row,
+  obj,
   label,
   href,
-  x,
-  y,
-  w,
-  i = 0,
-  dashed = false,
+  i,
+  scaleMul = 1,
 }: {
-  img: string;
-  alt: string;
+  col: number;
+  row: number;
+  obj: Obj;
   label: string;
   href: string;
-  x: number;
-  y: number;
-  w: number;
-  i?: number;
-  dashed?: boolean;
+  i: number;
+  scaleMul?: number;
 }) {
+  const p = tilePos(col, row);
+  const w = obj.sw * S * scaleMul;
+  const h = obj.sh * S * scaleMul;
+  const ox = p.x + (TW - w) / 2;
+  const oy = p.y + TH - h;
   return (
     <Link
       href={href}
       aria-label={label}
-      className="town-pop group absolute -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-200 active:scale-95"
-      style={{ left: `${x}%`, top: `${y}%`, zIndex: Math.round(y) + 10, animationDelay: `${i * 90}ms` }}
+      className="town-pop group absolute active:scale-95"
+      style={{ left: ox, top: oy, width: w, zIndex: depth(col, row) + 1, animationDelay: `${i * 90}ms`, transformOrigin: "bottom center" }}
     >
-      <span className="block" style={{ filter: "drop-shadow(0 6px 5px rgba(60,42,26,0.18))" }}>
-        {dashed ? (
-          <span
-            className="flex items-center justify-center rounded-2xl border-2 border-dashed border-[#9a8a6a]/70 bg-white/30"
-            style={{ width: w, height: w * 0.6 }}
-          >
-            <span className="material-symbols-outlined text-[26px] text-[#7a6a4a]">add</span>
-          </span>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={img}
-            alt={alt}
-            draggable={false}
-            className="select-none transition-transform duration-200 group-hover:-translate-y-1"
-            style={{ width: w, height: "auto" }}
-          />
-        )}
-      </span>
-      <span className="-mt-1 inline-block rounded-full bg-white/85 px-2.5 py-0.5 text-[11px] font-bold text-[#5a4a38] shadow-sm backdrop-blur-sm">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={obj.src}
+        alt={label}
+        draggable={false}
+        className="select-none transition-transform duration-200 group-hover:-translate-y-1"
+        style={{ width: w, height: h, filter: "drop-shadow(0 6px 5px rgba(60,42,26,0.18))" }}
+      />
+      <span
+        className="absolute left-1/2 top-full inline-block -translate-x-1/2 whitespace-nowrap rounded-full bg-white/85 px-2 py-0.5 text-[11px] font-bold text-[#5a4a38] shadow-sm"
+      >
         {label}
       </span>
     </Link>
   );
 }
 
-/** A decorative tile (tree, flowers, ground, road). Not interactive. Optional gentle sway. */
-function Decor({
-  img,
-  x,
-  y,
-  w,
-  z,
-  shadow = true,
-  sway = false,
-}: {
-  img: string;
-  x: number;
-  y: number;
-  w: number;
-  z?: number;
-  shadow?: boolean;
-  sway?: boolean;
-}) {
+/** Empty lot: a dashed plot on its ground cell. */
+function LotTile({ col, row, label, href, i }: { col: number; row: number; label: string; href: string; i: number }) {
+  const p = tilePos(col, row);
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={img}
-      alt=""
-      aria-hidden
-      draggable={false}
-      className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 select-none${sway ? " town-sway" : ""}`}
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        width: w,
-        height: "auto",
-        zIndex: z ?? Math.round(y),
-        transformOrigin: "bottom center",
-        filter: shadow ? "drop-shadow(0 4px 3px rgba(60,42,26,0.14))" : undefined,
-      }}
-    />
+    <Link
+      href={href}
+      aria-label={label}
+      className="town-pop group absolute flex flex-col items-center active:scale-95"
+      style={{ left: p.x + TW * 0.18, top: p.y + TH * 0.1, width: TW * 0.64, zIndex: depth(col, row) + 1, animationDelay: `${i * 90}ms`, transformOrigin: "bottom center" }}
+    >
+      <span className="flex w-full items-center justify-center rounded-md border-2 border-dashed border-[#8a7a5a]/70 bg-white/20" style={{ height: TH * 0.7 }}>
+        <span className="material-symbols-outlined text-[24px] text-[#6a5a3a]">add</span>
+      </span>
+      <span className="mt-0.5 whitespace-nowrap rounded-full bg-white/85 px-2 py-0.5 text-[11px] font-bold text-[#5a4a38] shadow-sm">{label}</span>
+    </Link>
   );
 }
 
-/** A cute side-view cat that ambles along the lane. */
+/** A side-view cat that ambles across the foreground (screen-space). */
 function Cat() {
   return (
-    <div className="town-cat pointer-events-none absolute" style={{ top: "70%", zIndex: 48 }} aria-hidden>
+    <div className="town-cat pointer-events-none absolute" style={{ bottom: "12%", zIndex: 900 }} aria-hidden>
       <div className="town-cat-bob" style={{ filter: "drop-shadow(0 3px 2px rgba(60,42,26,0.2))" }}>
-        <svg width="40" height="28" viewBox="0 0 40 28" fill="none">
+        <svg width="38" height="26" viewBox="0 0 40 28" fill="none">
           <path d="M5 16 q-6 -3 -5 -11" stroke="#E8A85C" strokeWidth="3" fill="none" strokeLinecap="round" />
           <ellipse cx="17" cy="17" rx="12" ry="7" fill="#E8A85C" />
           <rect x="11" y="21" width="2.6" height="6" rx="1.3" fill="#D8954A" />
@@ -126,7 +158,6 @@ function Cat() {
   );
 }
 
-/** A little bird gliding across the sky. */
 function Bird() {
   return (
     <div className="town-bird pointer-events-none absolute" style={{ zIndex: 5 }} aria-hidden>
@@ -143,10 +174,9 @@ function Bird() {
   );
 }
 
-/** A fluttering butterfly near the flowers. */
 function Butterfly() {
   return (
-    <div className="town-bfly pointer-events-none absolute" style={{ left: "42%", top: "36%", zIndex: 30 }} aria-hidden>
+    <div className="town-bfly pointer-events-none absolute" style={{ left: "30%", top: "30%", zIndex: 800 }} aria-hidden>
       <svg width="18" height="16" viewBox="0 0 20 18" fill="none">
         <ellipse className="town-bfly-wl" cx="7" cy="9" rx="5" ry="7" fill="#FF9ECF" />
         <ellipse className="town-bfly-wr" cx="13" cy="9" rx="5" ry="7" fill="#FFC36E" />
@@ -156,33 +186,71 @@ function Butterfly() {
   );
 }
 
-/**
- * The home town map. Fills its container (no scroll). Buildings navigate to menu
- * destinations; ピコ wears a name tag, wanders by day and sleeps by his cottage at
- * night. Clouds drift, a bird glides, a butterfly flutters, a cat ambles, trees sway.
- */
 export function TownMap({ business }: { business: Business }) {
-  const [isNight, setIsNight] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.7);
+  const [night, setNight] = useState<boolean | null>(null);
+
+  // initial day/night from the clock (user can toggle)
   useEffect(() => {
     const h = new Date().getHours();
-    setIsNight(h >= 20 || h < 6);
+    setNight(h >= 19 || h < 6);
   }, []);
 
-  const cottage = { x: 20, y: 26 };
+  // fit the fixed-size town canvas to the container
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const fit = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      setScale(Math.min(w / DW, h / DH, 1.25));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  const picoName = (
-    <span className="mb-0.5 inline-block rounded-full bg-[#3A2A1A]/85 px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">
-      ピコ
-    </span>
-  );
+  const isNight = !!night;
+
+  // build ピコ's walk keyframes from the road path (deterministic)
+  const picoFrames = PICO_PATH.map((c, idx) => {
+    const ctr = cellCenter(c[0], c[1]);
+    const pct = ((idx / PICO_PATH.length) * 100).toFixed(2);
+    return `${pct}% { transform: translate(${ctr.x.toFixed(1)}px, ${(ctr.y - 6).toFixed(1)}px); }`;
+  });
+  const first = cellCenter(PICO_PATH[0][0], PICO_PATH[0][1]);
+  picoFrames.push(`100% { transform: translate(${first.x.toFixed(1)}px, ${(first.y - 6).toFixed(1)}px); }`);
+
+  // ground/road tiles
+  const tiles = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = tilePos(c, r);
+      tiles.push(
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={`g${c}-${r}`}
+          src={isRoad(c, r) ? "/town/road.png" : "/town/ground.png"}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none absolute select-none"
+          style={{ left: p.x, top: p.y, width: TW + 1, height: TH + 1, zIndex: depth(c, r) }}
+        />
+      );
+    }
+  }
 
   return (
     <div
+      ref={wrapRef}
       className="relative h-full w-full overflow-hidden"
       style={{
         background: isNight
-          ? "linear-gradient(180deg, #2B2E4A 0%, #4A4E73 28%, #6E8E5A 62%, #5F8050 100%)"
-          : "linear-gradient(180deg, #FFF1DE 0%, #FBE7C7 20%, #D4EBB4 50%, #BFE0A0 100%)",
+          ? "linear-gradient(180deg, #2B2E4A 0%, #4A4E73 30%, #6E8E5A 64%, #5F8050 100%)"
+          : "linear-gradient(180deg, #FFF1DE 0%, #FBE7C7 20%, #CFE9AE 52%, #BFE0A0 100%)",
         transition: "background 1.2s ease",
       }}
     >
@@ -193,7 +261,6 @@ export function TownMap({ business }: { business: Business }) {
           background: isNight
             ? "radial-gradient(circle, #FFFDF0 0%, #F4E8B0 58%, transparent 70%)"
             : "radial-gradient(circle, #FFE9A8 0%, #FFD36E 55%, transparent 70%)",
-          opacity: 0.95,
           zIndex: 4,
         }}
         aria-hidden
@@ -202,115 +269,103 @@ export function TownMap({ business }: { business: Business }) {
       {/* sky life */}
       {isNight ? (
         <>
-          <span className="town-twinkle pointer-events-none absolute left-[14%] top-[12%] text-xs" style={{ zIndex: 4 }} aria-hidden>✦</span>
-          <span className="town-twinkle pointer-events-none absolute left-[34%] top-[8%] text-[10px]" style={{ zIndex: 4, animationDelay: "0.6s" }} aria-hidden>✦</span>
-          <span className="town-twinkle pointer-events-none absolute left-[58%] top-[14%] text-[9px]" style={{ zIndex: 4, animationDelay: "1.1s" }} aria-hidden>✦</span>
-          <span className="town-twinkle pointer-events-none absolute left-[80%] top-[10%] text-xs" style={{ zIndex: 4, animationDelay: "0.3s" }} aria-hidden>✦</span>
+          {["14%,12%,0s", "34%,8%,.6s", "58%,14%,1.1s", "80%,10%,.3s"].map((s, k) => {
+            const [l, t, d] = s.split(",");
+            return (
+              <span key={k} className="town-twinkle pointer-events-none absolute text-[10px]" style={{ left: l, top: t, zIndex: 4, animationDelay: d }} aria-hidden>✦</span>
+            );
+          })}
         </>
       ) : (
         <>
-          <div className="town-cloud town-cloud-1 pointer-events-none absolute h-6 w-16 rounded-full bg-white/70" style={{ top: "13%", zIndex: 3 }} aria-hidden />
-          <div className="town-cloud town-cloud-2 pointer-events-none absolute h-5 w-12 rounded-full bg-white/60" style={{ top: "22%", zIndex: 3 }} aria-hidden />
+          <div className="town-cloud town-cloud-1 pointer-events-none absolute h-6 w-16 rounded-full bg-white/70" style={{ top: "12%", zIndex: 3 }} aria-hidden />
+          <div className="town-cloud town-cloud-2 pointer-events-none absolute h-5 w-12 rounded-full bg-white/60" style={{ top: "20%", zIndex: 3 }} aria-hidden />
           <Bird />
           <Butterfly />
         </>
       )}
 
-      {/* town title */}
-      <p
-        className="pointer-events-none absolute left-1/2 top-3 z-[5] -translate-x-1/2 rounded-full bg-white/70 px-3 py-0.5 text-xs font-extrabold tracking-wide text-[#6a5638]"
-      >
+      {/* title + day/night toggle */}
+      <p className="pointer-events-none absolute left-1/2 top-3 z-[5] -translate-x-1/2 rounded-full bg-white/70 px-3 py-0.5 text-xs font-extrabold tracking-wide text-[#6a5638]">
         エグチタウン {isNight ? "🌙" : "☀️"}
       </p>
+      <button
+        type="button"
+        onClick={() => setNight((n) => !n)}
+        className="absolute left-3 top-3 z-[6] flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#6a5638] shadow-sm active:scale-90"
+        aria-label={isNight ? "昼にする" : "夜にする"}
+      >
+        <span className="material-symbols-outlined text-[18px]">{isNight ? "light_mode" : "dark_mode"}</span>
+      </button>
 
-      {/* positioning layer fills the whole map area */}
-      <div className="absolute inset-0">
-        {/* grassy base + lane (behind everything) */}
-        <Decor img="/town/ground.png" x={48} y={46} w={150} z={1} shadow={false} />
-        <Decor img="/town/ground.png" x={30} y={56} w={140} z={1} shadow={false} />
-        <Decor img="/town/road.png" x={52} y={40} w={118} z={2} shadow={false} />
-        <Decor img="/town/road.png" x={44} y={50} w={118} z={2} shadow={false} />
-        <Decor img="/town/road.png" x={60} y={46} w={118} z={2} shadow={false} />
+      <Cat />
 
-        {/* nature (some trees sway) */}
-        <Decor img="/town/tree-01.png" x={9} y={40} w={58} sway />
-        <Decor img="/town/tree-03.png" x={91} y={44} w={62} sway />
-        <Decor img="/town/tree-05.png" x={50} y={66} w={56} sway />
-        <Decor img="/town/tree-01.png" x={85} y={64} w={48} />
-        <Decor img="/town/flowers-pink.png" x={38} y={34} w={30} />
-        <Decor img="/town/flowers-yellow.png" x={64} y={60} w={30} />
+      {/* the isometric town, scaled to fit */}
+      <div
+        className="absolute left-1/2 top-1/2"
+        style={{ width: DW, height: DH, transform: `translate(-50%,-50%) scale(${scale})`, transformOrigin: "center" }}
+      >
+        {tiles}
 
-        {/* the wandering cat (nocturnal too) */}
-        <Cat />
+        {DECOR.map(([c, r, sp, m], k) => {
+          const p = tilePos(c, r);
+          const w = sp.sw * S * (m ?? 1);
+          const h = sp.sh * S * (m ?? 1);
+          return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={`d${k}`}
+              src={sp.src}
+              alt=""
+              aria-hidden
+              draggable={false}
+              className={`pointer-events-none absolute select-none${sp.sh > 100 ? " town-sway" : ""}`}
+              style={{ left: p.x + (TW - w) / 2, top: p.y + TH - h, width: w, height: h, zIndex: depth(c, r) + 1, transformOrigin: "bottom center", filter: "drop-shadow(0 4px 3px rgba(60,42,26,0.14))" }}
+            />
+          );
+        })}
 
-        {/* civic buildings */}
-        <Building img="/town/cottage.png" alt="ピコのいえ" label="ピコのいえ" href="/pico" x={cottage.x} y={cottage.y} w={120} i={0} />
-        <Building img="/town/market.png" alt="アイデアいちば" label="アイデアいちば" href="/explore" x={73} y={24} w={128} i={1} />
-        <Building img="/town/library.png" alt="がくしゅうかん" label="がくしゅうかん" href="/learn" x={33} y={50} w={134} i={2} />
-
-        {/* the user's business, or an empty lot */}
+        <BuildingTile col={0} row={0} obj={SP.cottage} label="ピコのいえ" href="/pico" i={0} />
+        <BuildingTile col={4} row={0} obj={SP.market} label="アイデアいちば" href="/explore" i={1} />
+        <BuildingTile col={0} row={4} obj={SP.library} label="がくしゅうかん" href="/learn" i={2} scaleMul={0.78} />
         {business ? (
-          <Building img="/town/shop.png" alt={business.idea} label="わたしのおみせ" href="/business" x={71} y={56} w={118} i={3} />
+          <BuildingTile col={4} row={4} obj={SP.shop} label="わたしのおみせ" href="/business" i={3} />
         ) : (
-          <Building img="" alt="あきち" label="あきち" href="/explore" x={71} y={56} w={112} i={3} dashed />
+          <LotTile col={4} row={4} label="あきち" href="/explore" i={3} />
         )}
 
-        {/* ピコ: name tag + wanders by day, sleeps by his cottage at night */}
-        {isNight ? (
-          <div
-            className="absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${cottage.x + 10}%`, top: `${cottage.y + 13}%`, zIndex: 60 }}
-          >
-            <Link href="/pico" aria-label="ピコとはなす" className="flex flex-col items-center active:scale-90" style={{ filter: "drop-shadow(0 5px 4px rgba(60,42,26,0.22))" }}>
-              {picoName}
-              <PicoAvatar size={50} mood="sleep" />
+        {/* ピコ patrols the streets with a name tag */}
+        <div className="town-pico absolute left-0 top-0" style={{ zIndex: 1000 }}>
+          <div className="-translate-x-1/2 -translate-y-[70%]">
+            <Link href="/pico" aria-label="ピコとはなす" className="town-pico-bob flex flex-col items-center active:scale-90" style={{ filter: "drop-shadow(0 5px 4px rgba(60,42,26,0.22))" }}>
+              <span className="mb-0.5 inline-block rounded-full bg-[#3A2A1A]/85 px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">ピコ</span>
+              <PicoAvatar size={46} mood="happy" />
             </Link>
           </div>
-        ) : (
-          <div
-            className="town-pico absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: "50%", top: "42%", zIndex: 60 }}
-          >
-            <Link
-              href="/pico"
-              aria-label="ピコとはなす"
-              className="town-pico-bob flex flex-col items-center transition-transform duration-200 active:scale-90"
-              style={{ filter: "drop-shadow(0 5px 4px rgba(60,42,26,0.22))" }}
-            >
-              {picoName}
-              <PicoAvatar size={54} mood="happy" />
-            </Link>
-          </div>
-        )}
+        </div>
       </div>
 
       <style>{`
-        @keyframes town-wander {
-          0%   { transform: translate(0px, 0px); }
-          25%  { transform: translate(70px, 26px); }
-          50%  { transform: translate(20px, 70px); }
-          75%  { transform: translate(-58px, 38px); }
-          100% { transform: translate(0px, 0px); }
-        }
-        @keyframes town-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
-        @keyframes town-pop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.82); } 100% { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-        @keyframes town-sway { 0%,100% { transform: translate(-50%,-50%) rotate(-2.2deg); } 50% { transform: translate(-50%,-50%) rotate(2.2deg); } }
+        @keyframes pico-walk { ${picoFrames.join(" ")} }
+        @keyframes town-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+        @keyframes town-pop { 0% { opacity: 0; transform: translateY(8px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes town-sway { 0%,100% { transform: rotate(-2.2deg); } 50% { transform: rotate(2.2deg); } }
         @keyframes town-cloud-1 { 0% { left: -22%; } 100% { left: 118%; } }
         @keyframes town-cloud-2 { 0% { left: -18%; } 100% { left: 116%; } }
         @keyframes town-bird { 0% { left: -12%; top: 16%; } 50% { top: 9%; } 100% { left: 116%; top: 15%; } }
         @keyframes town-bird-flap { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.55); } }
-        @keyframes town-bfly { 0% { transform: translate(0,0); } 25% { transform: translate(26px,-18px); } 50% { transform: translate(50px,8px); } 75% { transform: translate(18px,22px); } 100% { transform: translate(0,0); } }
+        @keyframes town-bfly { 0% { transform: translate(0,0); } 25% { transform: translate(40px,-26px); } 50% { transform: translate(80px,12px); } 75% { transform: translate(30px,34px); } 100% { transform: translate(0,0); } }
         @keyframes town-bfly-wl { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(0.3); } }
         @keyframes town-bfly-wr { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(0.3); } }
-        @keyframes town-cat { 0% { left: 12%; transform: scaleX(1); } 47% { left: 46%; transform: scaleX(1); } 50% { left: 46%; transform: scaleX(-1); } 97% { left: 12%; transform: scaleX(-1); } 100% { left: 12%; transform: scaleX(1); } }
+        @keyframes town-cat { 0% { left: 10%; transform: scaleX(1); } 47% { left: 60%; transform: scaleX(1); } 50% { left: 60%; transform: scaleX(-1); } 97% { left: 10%; transform: scaleX(-1); } 100% { left: 10%; transform: scaleX(1); } }
         @keyframes town-cat-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
         @keyframes town-twinkle { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
         @keyframes town-celestial { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
-        .town-pico { animation: town-wander 22s ease-in-out infinite; }
-        .town-pico-bob { animation: town-bob 2.4s ease-in-out infinite; }
-        .town-pop { animation: town-pop 0.5s cubic-bezier(.2,.8,.2,1.2) both; }
-        .town-sway { animation: town-sway 4.5s ease-in-out infinite; color: #fff; }
+        .town-pico { animation: pico-walk ${(PICO_PATH.length * 1.25).toFixed(0)}s linear infinite; }
+        .town-pico-bob { animation: town-bob 0.55s ease-in-out infinite; }
+        .town-pop { animation: town-pop 0.5s ease both; }
+        .town-sway { animation: town-sway 4.5s ease-in-out infinite; }
         .town-cloud-1 { animation: town-cloud-1 48s linear infinite; }
         .town-cloud-2 { animation: town-cloud-2 64s linear infinite; }
         .town-bird { animation: town-bird 17s linear infinite; }
@@ -325,6 +380,7 @@ export function TownMap({ business }: { business: Business }) {
         @media (prefers-reduced-motion: reduce) {
           .town-pico, .town-pico-bob, .town-sway, .town-cloud-1, .town-cloud-2, .town-bird, .town-bird-flap, .town-bfly, .town-bfly-wl, .town-bfly-wr, .town-cat, .town-cat-bob, .town-twinkle, .town-celestial { animation: none; }
           .town-pop { animation: none; opacity: 1; }
+          .town-pico { transform: translate(${first.x.toFixed(0)}px, ${first.y.toFixed(0)}px); }
         }
       `}</style>
     </div>
