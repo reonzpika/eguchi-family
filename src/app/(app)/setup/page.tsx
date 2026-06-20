@@ -11,7 +11,6 @@ const CLAUDE_URL = "https://claude.ai/";
 export default function SetupPage() {
   const router = useRouter();
   const account = getHelp("claude-account");
-  const project = getHelp("claude-project");
 
   function done() {
     localStorage.setItem("claude_setup_done", "1");
@@ -26,7 +25,7 @@ export default function SetupPage() {
 
         {/* 1. account */}
         <div className="mb-4 rounded-2xl border border-border-warm bg-white p-5">
-          <p className="mb-1 text-sm font-bold text-on-surface">① {account?.title}</p>
+          <p className="mb-1 text-sm font-bold text-on-surface">{account?.title}</p>
           <p className="mb-3 text-sm leading-relaxed text-on-surface-variant">{account?.body}</p>
           <div className="flex flex-wrap gap-2">
             <a
@@ -50,23 +49,6 @@ export default function SetupPage() {
               </a>
             )}
           </div>
-        </div>
-
-        {/* 2. projects */}
-        <div className="mb-6 rounded-2xl border border-border-warm bg-white p-5">
-          <p className="mb-1 text-sm font-bold text-on-surface">② {project?.title}</p>
-          <p className="mb-3 text-sm leading-relaxed text-on-surface-variant">{project?.body}</p>
-          {project?.article && (
-            <a
-              href={project.article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-bold text-primary"
-            >
-              プロジェクトの作り方を見る
-              <span className="material-symbols-outlined text-sm">open_in_new</span>
-            </a>
-          )}
         </div>
 
         <button

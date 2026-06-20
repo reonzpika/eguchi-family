@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { getStage } from "@/lib/workshop/recipes";
 import { WorkshopChat } from "@/components/workshop/WorkshopChat";
 import { HelpCard } from "@/components/workshop/HelpCard";
-import { PicoBubble } from "@/components/journey/Pico";
+import { PicoChat } from "@/components/workshop/PicoChat";
 
 /**
  * ピコ tab: the engine room. Runs the readiness gate (?mode=gate) and the per-stage
@@ -78,23 +78,6 @@ export default async function PicoPage({
     }
   }
 
-  // Free landing
-  return (
-    <div className="min-h-[100dvh] bg-background pb-32 text-on-surface">
-      <div className="mx-auto max-w-2xl px-5 pt-6">
-        <PicoBubble line="やあ！ぼくピコ。なんでもきいてね 😊" size={52} />
-        <div className="space-y-3">
-          <Link href="/explore" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
-            💡 アイデアをさがす
-          </Link>
-          <Link href="/business" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
-            🗺️ わたしのビジネスを見る
-          </Link>
-          <Link href="/learn" className="block rounded-2xl border border-border-warm bg-white p-4 text-sm font-semibold text-on-surface transition-transform active:scale-[0.98]">
-            📖 助けて・使い方
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  // Free landing -> conversational ピコ
+  return <PicoChat />;
 }

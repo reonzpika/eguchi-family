@@ -8,6 +8,7 @@ const tabs = [
   { id: "business", label: "ビジネス", icon: "storefront", path: "/business" },
   { id: "explore", label: "アイデア", icon: "lightbulb", path: "/explore" },
   { id: "pico", label: "ピコ", icon: "smart_toy", path: "/pico" },
+  { id: "learn", label: "学ぶ", icon: "menu_book", path: "/learn" },
 ] as const;
 
 export function BottomNav() {
